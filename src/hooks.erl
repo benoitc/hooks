@@ -231,7 +231,7 @@ only(HookName, Args) ->
             Error
     end.
 
-
+%% @hidden
 start_link() ->
     _ = init_tabs(),
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
