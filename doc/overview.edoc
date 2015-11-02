@@ -39,6 +39,8 @@ Main Features are:
 - Module list is compiled to a beam once an hook or a list of hooks is registered. It allows us to share the list of registered hooks between every process of your application without message passing. It is also memory efficient and minimize locking.
 
 
+This application is inspired by the [vmq_plugins](https://github.com/erlio/vmq_plugin) but is rewritten from scratch to use merl, and simplify its usage.
+
 ## Usage
 
 Full application API is available in {@link hooks} .
