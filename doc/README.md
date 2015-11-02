@@ -4,7 +4,7 @@
 
 Copyright (c) 2015 Benoît Chesneau.
 
-__Version:__ 1.0.0
+__Version:__ 1.0.1
 
 # hooks
 
