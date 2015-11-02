@@ -247,6 +247,7 @@ init_tabs() ->
             true
     end.
 
+%% @hidden
 init([]) ->
     Ready = case application:get_env(hooks, wait_for_proc) of
                 {ok, Proc} when is_atom(Proc) ->
@@ -260,6 +261,7 @@ init([]) ->
 
     {ok, #state{ready=Ready}}.
 
+%% @hidden
 handle_call({reg, HookName, {Priority, MFA}}, _From, State) ->
     case do_reg(HookName, {Priority, MFA}) of
         ok ->
@@ -304,10 +306,11 @@ handle_call({disable_plugin, Application}, _From, State) ->
 handle_call(_Msg, _From, State) ->
     {reply, badarg, State}.
 
-
+%% @hidden
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
+%% @hidden
 handle_info(ready, State) ->
     build_hooks(),
     {noreply, State#state{ready=true}};
@@ -323,10 +326,11 @@ handle_info(init_internal_hooks, State) ->
 handle_info(_Info, State) ->
     {noreply, State}.
 
+%% @hidden
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
-
+%% @hidden
 terminate(_Reason, _Srv) ->
     ok.
 

@@ -8,7 +8,9 @@ __Version:__ 1.0.2
 
 # hooks
 
-`hooks` is a generic Hooks system for Erlang applications. It allows you to augment your application by adding hooks to your application aka [Hooking](eneric Hooks system for Erlang applications).
+`hooks` is a generic Hooks system for Erlang applications. It allows you to
+augment your application by adding hooks to your application aka
+[Hooking](https://en.wikipedia.org/wiki/Hookin://en.wikipedia.org/wiki/Hooking).
 
 Main Features are:
 
