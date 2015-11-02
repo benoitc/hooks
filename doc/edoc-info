@@ -1,0 +1,3 @@
+%% encoding: UTF-8
+{application,hooks}.
+{modules,[hooks,hooks_app,hooks_sup]}.
