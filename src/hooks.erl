@@ -130,7 +130,7 @@ enable_plugin(Application, Paths)
 disable_plugin(Application) ->
     gen_server:call(?MODULE, {disable_plugin, Application}).
 
-%% run all hooks registered for the HookName.
+%% @doc run all hooks registered for the HookName.
 %% Execution can be interrupted if an hook return the atom `stop'.
 -spec run(HookName::hookname(), Args::list()) -> ok.
 run(HookName, Args) ->
@@ -154,7 +154,7 @@ run1([{M, F} | Rest], HookName, Args) ->
             run1(Rest, HookName, Args)
     end.
 
-%% @doc foold over all hooks registered for HookName, and return Acc.
+%% @doc fold over all hooks registered for HookName, and return Acc.
 %% interuptiuo can be interupted if the hook return `stop' in thacase the
 %% latest Acc will be returned or `{stop, Acc}', in the case the Acc will be
 %% returned. In other cases the value returned by the hook will be given to
