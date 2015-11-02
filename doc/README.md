@@ -4,7 +4,7 @@
 
 Copyright (c) 2015 Benoît Chesneau.
 
-__Version:__ 1.0.1
+__Version:__ 1.0.2
 
 # hooks
 
@@ -64,7 +64,9 @@ To expose the hooks,  just add them to application environment settings. Example
 {application, 'myapp',
  [{description, ""},
   {vsn, "1.0.0"},
+
   ...
+
   {env,[
     {hooks, [{a, [{?MODULE, hook1, 0},
                   {?MODULE, hook2, 0}]},
@@ -74,6 +76,7 @@ To expose the hooks,  just add them to application environment settings. Example
   ]},
 
   ...
+
  ]}.
 ```
 

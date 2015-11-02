@@ -23,7 +23,7 @@
 %%==============================================================================
 
 @copyright 2015 Benoît Chesneau.
-@version 1.0.1
+@version 1.0.2
 @title hooks - Generic Hooks system for Erlang applications
 
 @doc
@@ -62,7 +62,7 @@ ok = hooks:reg(a, ?MODULE, hook_add2, 1, 0),
 ### add multiple hooks
 
 - `hook:mreg/1': to register multiple hooks
-- `hooks:munreg/1': to register multiple hooks 
+- `hooks:munreg/1': to register multiple hooks
 
 
 Ex:
@@ -80,7 +80,7 @@ ok = hooks:mreg(Hooks),
 ok = hooks:munreg(Hooks)
 '''
 
-### Enable/Disable Plugins 
+### Enable/Disable Plugins
 
 Plugins are simple Erlang applications that exposes hooks. A plugin can be enabled to your application using `hooks:enable_plugin/{1,2}' and disabled using `hooks:disable_plugin/1' . When enabled the application and its dependencies are started (if not already stared) and exposed hooks are registered.
 
@@ -90,9 +90,9 @@ To expose the hooks,  just add them to application environment settings. Example
 {application, 'myapp',
  [{description, ""},
   {vsn, "1.0.0"},
- 
+
   ...
- 
+
   {env,[
     {hooks, [{a, [{?MODULE, hook1, 0},
                   {?MODULE, hook2, 0}]},
@@ -102,7 +102,7 @@ To expose the hooks,  just add them to application environment settings. Example
   ]},
 
   ...
- 
+
  ]}.
 '''
 

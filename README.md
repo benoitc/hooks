@@ -4,7 +4,7 @@
 
 Copyright (c) 2015 Benoît Chesneau.
 
-__Version:__ 1.0.1
+__Version:__ 1.0.2
 
 # hooks
 
@@ -20,7 +20,7 @@ This application is inspired by the [vmq_plugins](https://github.com/erlio/vmq_p
 
 ## Usage
 
-Full application API is available in [`hooks`](http://github.com/benoitc/hooks/blob/master/doc/hooks.md) .
+Full application API is available in [`hooks`](http://github.com/barrel-db/hooks/blob/master/doc/hooks.md) .
 
 ### adding hooks manually
 
@@ -64,7 +64,9 @@ To expose the hooks,  just add them to application environment settings. Example
 {application, 'myapp',
  [{description, ""},
   {vsn, "1.0.0"},
+
   ...
+
   {env,[
     {hooks, [{a, [{?MODULE, hook1, 0},
                   {?MODULE, hook2, 0}]},
@@ -74,6 +76,7 @@ To expose the hooks,  just add them to application environment settings. Example
   ]},
 
   ...
+
  ]}.
 ```
 
