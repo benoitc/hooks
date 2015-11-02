@@ -31,9 +31,9 @@
 
 %% API to register hooks manually
 -export([reg/3, reg/4, reg/5,
-		 unreg/3, unreg/4, unreg/5,
-		 mreg/1,
-		 munreg/1]).
+         unreg/3, unreg/4, unreg/5,
+         mreg/1,
+         munreg/1]).
 
 %% API to register hooks from applications
 -export([enable_plugin/1, enable_plugin/2,
@@ -59,7 +59,7 @@
                 on_build}).
 
 -type hook() :: {atom(), atom(), non_neg_integer()}
-                | {atom(), atom(), non_neg_integer(), integer()}.
+    | {atom(), atom(), non_neg_integer(), integer()}.
 -type hookname() :: any().
 -type hooks() :: [{hookname(), [hook()]}].
 
@@ -68,12 +68,12 @@
 %% @doc register a `Module:Fun/Arity' as hook, the function name become the hook name.
 -spec reg(Module::atom(), Fun::atom(), Arity::non_neg_integer()) -> ok | {error, term()}.
 reg(Module, Fun, Arity) ->
-	reg(Fun, Module, Fun, Arity, 0).
+    reg(Fun, Module, Fun, Arity, 0).
 
 %% @doc register `Module:Fun/Arity' for the hook HookName
 -spec reg(HookName::hookname(), Module::atom(), Fun::atom(), Arity::non_neg_integer()) -> ok | {error, term()}.
 reg(HookName, Module, Fun, Arity) ->
-	reg(HookName, Module, Fun, Arity, 0).
+    reg(HookName, Module, Fun, Arity, 0).
 
 
 %% @doc register `Module:Fun/Arity' for the hook HookName with a priority
@@ -81,18 +81,18 @@ reg(HookName, Module, Fun, Arity) ->
 -spec reg(HookName::hookname(), Module::atom(), Fun::atom(),
           Arity::non_neg_integer(), Priority::integer()) -> ok | {error, term()}.
 reg(HookName, Module, Fun, Arity, Priority) ->
-	gen_server:call(?MODULE, {reg, HookName, {Priority, {Module, Fun, Arity}}}).
+    gen_server:call(?MODULE, {reg, HookName, {Priority, {Module, Fun, Arity}}}).
 
 %% @doc unregister `Module:Fun/Arity', the function name is the hook
 -spec unreg(Module::atom(), Function::atom(), Arity::non_neg_integer()) -> ok.
 unreg(Module, Fun, Arity) ->
-	unreg(Fun, Module, Fun, Arity).
+    unreg(Fun, Module, Fun, Arity).
 
 
 %% @doc unregister `Module:Fun/Arity' for the hook HookName
 -spec unreg(HookName::hookname(), Module::atom(), Fun::atom(), Arity::non_neg_integer()) -> ok.
 unreg(HookName, Module, Fun, Arity) ->
-	unreg(HookName, Module, Fun, Arity, 0).
+    unreg(HookName, Module, Fun, Arity, 0).
 
 %% @doc unregister `Module:Fun/Arity' registered for the hook HookName with a
 %% priority
@@ -104,12 +104,12 @@ unreg(HookName, Module, Fun, Arity, Priority) ->
 %% @doc register multiple hooks
 -spec mreg(Hooks::hooks()) -> ok | {error, term()}.
 mreg(Hooks) ->
-	gen_server:call(?MODULE, {mreg, Hooks}).
+    gen_server:call(?MODULE, {mreg, Hooks}).
 
 %% @doc disable multiple hooks
 -spec munreg(Hooks::hooks()) -> ok.
 munreg(Hooks) ->
-	gen_server:call(?MODULE, {munreg, Hooks}).
+    gen_server:call(?MODULE, {munreg, Hooks}).
 
 %% @doc enable a plugin
 %% This function will start an application if not started and register hooks
@@ -117,30 +117,30 @@ munreg(Hooks) ->
 %% `hooks' key in the application environnement
 -spec enable_plugin(Application::atom()) -> ok | {error, term()}.
 enable_plugin(Application) ->
-	enable_plugin(Application, []).
+    enable_plugin(Application, []).
 
 %% @doc enable a plugin and load paths if needed
 -spec enable_plugin(Application::atom(), Paths::[string()]) -> ok | {error, term()}.
 enable_plugin(Application, Paths)
-		when is_atom(Application), is_list(Paths) ->
-	gen_server:call(?MODULE, {enable_plugin, Application, Paths}).
+        when is_atom(Application), is_list(Paths) ->
+    gen_server:call(?MODULE, {enable_plugin, Application, Paths}).
 
 %% @doc disable a plugin
 -spec disable_plugin(Application::atom()) -> ok.
 disable_plugin(Application) ->
-	gen_server:call(?MODULE, {disable_plugin, Application}).
+    gen_server:call(?MODULE, {disable_plugin, Application}).
 
 %% run all hooks registered for the HookName.
 %% Execution can be interrupted if an hook return the atom `stop'.
 -spec run(HookName::hookname(), Args::list()) -> ok.
 run(HookName, Args) ->
-	case hooks_list:find(HookName) of
-		{ok, Hooks} -> run1(Hooks, HookName, Args);
-		_ -> ok
-	end.
+    case hooks_list:find(HookName) of
+        {ok, Hooks} -> run1(Hooks, HookName, Args);
+        _ -> ok
+    end.
 
 run1([], _HookName, _Args) ->
-	ok;
+    ok;
 run1([{M, F} | Rest], HookName, Args) ->
 	Ret = (catch apply(M, F, Args)),
 	case Ret of
@@ -539,7 +539,6 @@ load_plugin(Application, Paths) ->
 			lists:foreach(fun({HookName, Specs}) ->
 				case check_hooks(Specs, []) of
 					{ok, Specs2} ->
-
 						case ets:lookup(?TAB, {h, HookName})  of
 							[] ->
 								ets:insert(?TAB, {{h, HookName}, Specs2});
