@@ -23,7 +23,7 @@
 %%==============================================================================
 
 @copyright 2015 Benoît Chesneau.
-@version 1.0.2
+@version 1.0.3
 @title hooks - Generic Hooks system for Erlang applications
 
 @doc

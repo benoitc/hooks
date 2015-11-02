@@ -3,7 +3,7 @@
 
 {application, 'hooks',
  [{description, "generic plugin & hook system"},
-  {vsn, "1.0.2"},
+  {vsn, "1.0.3"},
   {registered, [hooks_sup]},
   {mod, {'hooks_app', []}},
   {applications,
