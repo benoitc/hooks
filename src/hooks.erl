@@ -427,8 +427,13 @@ do_enable_plugin(Application, Paths) ->
     end.
 
 do_disable_plugin(Application) ->
-    case lists:keyfind(Application, 1, application:which_applications()) of
-        true ->  application:stop(Application);
+    case lists:keyfind(Application, 1, application:loaded_applications()) of
+        true ->
+            Exports = Application:module_info(exports),
+            case lists:member({stop, 0}, Exports) of
+                true -> Application:stop();
+                false -> application:stop(Application)
+            end;
         _ -> ok
     end,
 
@@ -458,10 +463,17 @@ add_paths([Path | Rest]) ->
 maybe_start_plugin(Application) ->
     case lists:keyfind(Application, 1, application:which_applications()) of
         false ->
-            Res = application:ensure_all_started(Application),
-            case Res of
-                {ok, _} -> ok;
-                Error -> Error
+            _ = application:load(Application),
+            Exports = Application:module_info(exports),
+            case check_exported_functions([{start, 0}, {stop, 0}], Exports) of
+                ok ->
+                    Application:start();
+                _ ->
+                    Res = application:ensure_all_started(Application),
+                    case Res of
+                        {ok, _} -> ok;
+                        Error -> Error
+                    end
             end;
         _Else ->
             already_started
@@ -561,6 +573,14 @@ load_plugin(Application, Paths) ->
         true ->
             error_logger:error_msg("~p~n error loading: ~p~n", [Application, Start]),
             Start
+    end.
+
+check_exported_functions([], _Exports) ->
+    ok;
+check_exported_functions([{F, A} | Rest], Exports) ->
+    case lists:member({F, A}, Exports) of
+        true -> check_exported_functions(Rest, Exports);
+        false -> {not_exported, {F, A}}
     end.
 
 -ifdef(TEST).

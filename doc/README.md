@@ -4,7 +4,7 @@
 
 Copyright (c) 2015 Benoît Chesneau.
 
-__Version:__ 1.0.3
+__Version:__ 1.1.0
 
 # hooks
 
@@ -96,12 +96,21 @@ You can use the following command to execute hooks
 
 ### advanced features
 
-2 internal hooks are exposed:
+#### Internal  hooks
+
+2 internal hooks are exposed
 
 - `init_hooks`: the hook is executed when hooks is started, a function of arity 0 is expected.
 - `build_hooks`: the hooks is executed when the list of hooks has changed. A function of arity 1, receiving the list of hooks is expected.
 
 When added to the hooks application environnement, the hooks are immediately available and won't wait for any registered process.
 
-the `wait_for_proc` apllication environnement settings in the `hooks` application allows you to wait for a specific registered process (example your main application process) to be started before making the hooks available. It means that until the process isn`t registered the beam containing the list of hooks won't be compiled with the list of added hooks.
+#### wait_for_proc application setting
 
+The `wait_for_proc` apllication environnement settings in the `hooks` application allows you to wait for a specific registered process (example your main application process) to be started before making the hooks available. It means that until the process isn`t registered the beam containing the list of hooks won't be compiled with the list of added hooks.
+
+#### custom start/stop functions
+
+When enabling a plugin the application is generally started like any OTP application. In some cases however you may want to use your own start/stop functions.
+
+To do it create an `Application` module and add to it the functions `start/0` and `stop/0`. `Application:start/0` should return ok or an error if it can't be started.
