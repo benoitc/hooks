@@ -12,6 +12,9 @@ __Version:__ 1.1.0
 augment your application by adding hooks to your application aka
 [Hooking](https://en.wikipedia.org/wiki/Hooking).
 
+[![Build Status](https://travis-ci.org/barrel-db/hooks.png?branch=master)](https://travis-ci.org/barrel-db/hooks)
+[![Hex pm](http://img.shields.io/hexpm/v/hooks.svg?style=flat)](https://hex.pm/packages/hooks)
+
 Main Features are:
 
 - Handle module hooks
