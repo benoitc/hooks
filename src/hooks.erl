@@ -257,6 +257,9 @@ init([]) ->
                     true
             end,
 
+    %% build empty list of hooks
+    build_hooks([]),
+
     self() ! init_internal_hooks,
 
     {ok, #state{ready=Ready}}.
