@@ -48,7 +48,7 @@ hooks() = [{<a href="#type-hookname">hookname()</a>, [<a href="#type-hook">hook(
 
 <table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#all-2">all/2</a></td><td>execute all hooks for this HookName and return all results.</td></tr><tr><td valign="top"><a href="#all_till_ok-2">all_till_ok/2</a></td><td>execute all hooks for the HookName until one return ok or {ok, Val}.</td></tr><tr><td valign="top"><a href="#disable_plugin-1">disable_plugin/1</a></td><td>disable a plugin.</td></tr><tr><td valign="top"><a href="#enable_plugin-1">enable_plugin/1</a></td><td>enable a plugin
 This function will start an application if not started and register hooks
-from it if none have been registered before.</td></tr><tr><td valign="top"><a href="#enable_plugin-2">enable_plugin/2</a></td><td>enable a plugin and load paths if needed.</td></tr><tr><td valign="top"><a href="#mreg-1">mreg/1</a></td><td>register multiple hooks.</td></tr><tr><td valign="top"><a href="#munreg-1">munreg/1</a></td><td>disable multiple hooks.</td></tr><tr><td valign="top"><a href="#only-2">only/2</a></td><td>call the top priority hook for the HookName.</td></tr><tr><td valign="top"><a href="#reg-3">reg/3</a></td><td>register a <code>Module:Fun/Arity</code> as hook, the function name become the hook name.</td></tr><tr><td valign="top"><a href="#reg-4">reg/4</a></td><td>register <code>Module:Fun/Arity</code> for the hook HookName.</td></tr><tr><td valign="top"><a href="#reg-5">reg/5</a></td><td>register <code>Module:Fun/Arity</code> for the hook HookName with a priority
+from it if none have been registered before.</td></tr><tr><td valign="top"><a href="#enable_plugin-2">enable_plugin/2</a></td><td>enable a plugin and load paths if needed.</td></tr><tr><td valign="top"><a href="#find-1">find/1</a></td><td>retrieve the lists of registered functions for an hook.</td></tr><tr><td valign="top"><a href="#mreg-1">mreg/1</a></td><td>register multiple hooks.</td></tr><tr><td valign="top"><a href="#munreg-1">munreg/1</a></td><td>disable multiple hooks.</td></tr><tr><td valign="top"><a href="#only-2">only/2</a></td><td>call the top priority hook for the HookName.</td></tr><tr><td valign="top"><a href="#reg-3">reg/3</a></td><td>register a <code>Module:Fun/Arity</code> as hook, the function name become the hook name.</td></tr><tr><td valign="top"><a href="#reg-4">reg/4</a></td><td>register <code>Module:Fun/Arity</code> for the hook HookName.</td></tr><tr><td valign="top"><a href="#reg-5">reg/5</a></td><td>register <code>Module:Fun/Arity</code> for the hook HookName with a priority
 (default is 0).</td></tr><tr><td valign="top"><a href="#run-2">run/2</a></td><td>run all hooks registered for the HookName.</td></tr><tr><td valign="top"><a href="#run_fold-3">run_fold/3</a></td><td>fold over all hooks registered for HookName, and return Acc.</td></tr><tr><td valign="top"><a href="#unreg-3">unreg/3</a></td><td>unregister <code>Module:Fun/Arity</code>, the function name is the hook.</td></tr><tr><td valign="top"><a href="#unreg-4">unreg/4</a></td><td>unregister <code>Module:Fun/Arity</code> for the hook HookName.</td></tr><tr><td valign="top"><a href="#unreg-5">unreg/5</a></td><td>unregister <code>Module:Fun/Arity</code> registered for the hook HookName with a
 priority.</td></tr></table>
 
@@ -116,6 +116,17 @@ enable_plugin(Application::atom(), Paths::[string()]) -&gt; ok | {error, term()}
 
 enable a plugin and load paths if needed
 
+<a name="find-1"></a>
+
+### find/1 ###
+
+<pre><code>
+find(HookName::<a href="#type-hookname">hookname()</a>) -&gt; {ok, [{atom(), atom()}]} | error
+</code></pre>
+<br />
+
+retrieve the lists of registered functions for an hook.
+
 <a name="mreg-1"></a>
 
 ### mreg/1 ###
@@ -143,7 +154,7 @@ disable multiple hooks
 ### only/2 ###
 
 <pre><code>
-only(HookName::<a href="#type-hookname">hookname()</a>, Args::list()) -&gt; any() | hooks_not_found
+only(HookName::<a href="#type-hookname">hookname()</a>, Args::list()) -&gt; any() | no_hook
 </code></pre>
 <br />
 

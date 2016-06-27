@@ -2,9 +2,9 @@
 
 # hooks - Generic Hooks system for Erlang applications #
 
-Copyright (c) 2015 Benoît Chesneau.
+Copyright (c) 2015-2016 Benoît Chesneau.
 
-__Version:__ 1.1.1
+__Version:__ 1.2.0
 
 # hooks
 
@@ -110,7 +110,7 @@ When added to the hooks application environnement, the hooks are immediately ava
 
 #### wait_for_proc application setting
 
-The `wait_for_proc` apllication environnement settings in the `hooks` application allows you to wait for a specific registered process (example your main application process) to be started before making the hooks available. It means that until the process isn`t registered the beam containing the list of hooks won't be compiled with the list of added hooks.
+The `wait_for_proc` application environment settings in the `hooks` application allows you to wait for a specific registered process (example your main application process) to be started before making the hooks available. It means that until the process isn`t registered the beam containing the list of hooks won't be compiled with the list of added hooks.
 
 #### custom start/stop functions
 

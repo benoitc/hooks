@@ -4,7 +4,7 @@
 %%
 %% hooks: generic Erlang hooks application
 %%
-%% Copyright (c) 2015 Benoit Chesneau <benoitc@benoitcnetwork.eu>
+%% Copyright (c) 2015-2016 Benoit Chesneau <benoitc@benoitcnetwork.eu>
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -36,20 +36,12 @@
 -behaviour(application).
 
 %% Application callbacks
--export([start/2
-        ,stop/1]).
+-export([start/2, stop/1]).
 
 %%====================================================================
 %% API
 %%====================================================================
 
-start(_StartType, _StartArgs) ->
-    'hooks_sup':start_link().
+start(_StartType, _StartArgs) -> 'hooks_sup':start_link().
 
-%%--------------------------------------------------------------------
-stop(_State) ->
-    ok.
-
-%%====================================================================
-%% Internal functions
-%%====================================================================
+stop(_State) -> ok.

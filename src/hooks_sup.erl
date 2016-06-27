@@ -4,7 +4,7 @@
 %%
 %% hooks: generic Erlang hooks application
 %%
-%% Copyright (c) 2015 Benoit Chesneau <benoitc@benoitcnetwork.eu>
+%% Copyright (c) 2015-16 Benoit Chesneau <benoitc@benoitcnetwork.eu>
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -46,19 +46,16 @@
 %% API functions
 %%====================================================================
 
-start_link() ->
-    supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+start_link() -> supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
 %%====================================================================
 %% Supervisor callbacks
 %%====================================================================
 
 init([]) ->
-	Hooks = {hooks,
-			 {hooks, start_link, []},
-			 permanent, 5000, worker, [hooks]},
+	Hooks = {hooks, {hooks, start_link, []}, permanent, 5000, worker, [hooks]},
 
-    {ok, { {one_for_all, 0, 1}, [Hooks]} }.
+	{ok, { {one_for_all, 0, 1}, [Hooks]} }.
 
 %%====================================================================
 %% Internal functions
