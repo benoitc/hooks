@@ -42,10 +42,9 @@ Main Features are:
 
 - Handle module hooks
 - Basic plugin system
-- Module list is compiled to a beam once an hook or a list of hooks is registered. It allows us to share the list of registered hooks between every process of your application without message passing. It is also memory efficient and minimize locking.
+- Registered hooks are exported as functions in a dynamically compiled erlang module . It allows us to share the list of registered hooks between every process of your application without message passing. It is also memory efficient and minimize locking.
 
 
-This application is inspired by the [vmq_plugins](https://github.com/erlio/vmq_plugin) but is rewritten from scratch to use merl, and simplify its usage.
 
 ## Usage
 
