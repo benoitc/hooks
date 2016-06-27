@@ -45,6 +45,8 @@
          all_till_ok/2,
          only/2]).
 
+-export([find/1]).
+
 -export([start_link/0]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2,
@@ -57,6 +59,13 @@
 -record(state, {ready=true,
                 on_init,
                 on_build}).
+
+
+-define(find_hook(Name),
+    case catch hooks_mod:Name() of
+        {'EXIT', _} -> no_hook;
+        Res -> Res
+    end).
 
 -type hook() :: {atom(), atom(), non_neg_integer()}
 | {atom(), atom(), non_neg_integer(), integer()}.
@@ -134,9 +143,9 @@ disable_plugin(Application) ->
 %% Execution can be interrupted if an hook return the atom `stop'.
 -spec run(HookName::hookname(), Args::list()) -> ok.
 run(HookName, Args) ->
-    case hooks_list:find(HookName) of
-        {ok, Hooks} -> run1(Hooks, HookName, Args);
-        _ -> ok
+    case ?find_hook(HookName) of
+        no_hook -> ok;
+        Hooks -> run1(Hooks, HookName, Args)
     end.
 
 run1([], _HookName, _Args) ->
@@ -161,8 +170,9 @@ run1([{M, F} | Rest], HookName, Args) ->
 %% the next function.
 -spec run_fold(HookName::hookname(), Args::list(), Acc::any()) -> Acc2::any().
 run_fold(HookName, Args, Acc) ->
-    case hooks_list:find(HookName) of
-        {ok, Hooks} -> run_fold1(Hooks, Args, HookName, Acc);
+    case ?find_hook(HookName) of
+        no_hook -> Acc;
+        Hooks -> run_fold1(Hooks, Args, HookName, Acc);
         _ -> Acc
     end.
 
@@ -189,9 +199,9 @@ run_fold1([{M, F} | Rest], Args0, HookName, Acc) ->
 %% @doc execute all hooks for this HookName and return all results
 -spec all(HookName::hookname(), Args::list()) -> [any()].
 all(HookName, Args) ->
-    case hooks_list:find(HookName) of
-        {ok, Hooks} -> all1(Hooks, Args, []);
-        _ -> []
+    case ?find_hook(HookName) of
+        no_hook -> [];
+        Hooks -> all1(Hooks, Args, [])
     end.
 
 all1([{Module, Fun} | Rest], Args, Acc) ->
@@ -205,9 +215,9 @@ all1([], _Args, Acc) ->
 -spec all_till_ok(HookName::hookname(), Args::list())
 -> ok | {ok, any()} | {error, term()}.
 all_till_ok(HookName, Args) ->
-    case hooks_list:find(HookName) of
-        {ok, Hooks} -> all_till_ok1(Hooks, Args, []);
-        _ -> []
+    case ?find_hook(HookName) of
+        no_hook -> [];
+        Hooks -> all_till_ok1(Hooks, Args, [])
     end.
 
 all_till_ok1([{Module, Fun} | Rest], Args, ErrAcc) ->
@@ -222,13 +232,20 @@ all_till_ok1([], _Args, ErrAcc) ->
 
 
 %% @doc call the top priority hook for the HookName
--spec only(HookName::hookname(), Args::list()) -> any() | hooks_not_found.
+-spec only(HookName::hookname(), Args::list()) -> any() | no_hook.
 only(HookName, Args) ->
-    case hooks_list:find(HookName) of
-        {ok, [{Module, Fun} |_]} ->
-            apply(Module, Fun, Args);
-        Error ->
-            Error
+    case ?find_hook(HookName) of
+        no_hook -> no_hook;
+        [{Module, Fun} |_] -> apply(Module, Fun, Args)
+    end.
+
+
+%% @doc retrieve the lists of registered functions for an hook.
+-spec find(HookName::hookname()) -> {ok, [{atom(), atom()}]} | error.
+find(HookName) ->
+    case ?find_hook(HookName) of
+        no_hook -> error;
+        Hooks -> {ok, Hooks}
     end.
 
 %% @hidden
@@ -510,19 +527,20 @@ build_hooks() ->
     build_hooks(Hooks).
 
 build_hooks(Hooks) ->
-    %% hooks:find_hook/1 function
-    Cs0 = lists:foldl(fun({Name, FunsByPriority}, Acc) ->
-                              Funs = [{M, F} || {_P, {M, F, _A}} <- FunsByPriority],
-                              [?Q(["(_@Name@) ->",
-                                   "{ok, _@Funs@}"]) | Acc]
-                      end, [], Hooks),
-    Cs = lists:reverse([?Q("(_) -> hook_not_found") | Cs0]),
-    Find = erl_syntax:function(merl:term('find'), Cs),
+    %% build hooks function 'hook() -> [{M, F} |..].'
+    {Exports, HookFuns} = lists:foldl(
+        fun({Name, FunsByPriority}, {ExportsAcc, FunsAcc}) ->
+            Funs = [{M, F} || {_P, {M, F, _A}} <- FunsByPriority],
+            HookFun =  erl_syntax:function(merl:term(Name), [?Q("() -> _@Funs@")]),
+            {[atom_to_list(Name) | ExportsAcc], [HookFun | FunsAcc]}
+        end,
+        {[], []}, Hooks),
 
     %% build module
-    Module = ?Q("-module('hooks_list')."),
-    Exported = ?Q("-export(['find'/1])."),
-    Functions = [ ?Q("'@_F'() -> [].") || F <- [Find]],
+    Module = ?Q("-module('hooks_mod')."),
+    ExportedStr = string:join(["'" ++ E ++ "'/0" || E <- Exports], ","),
+    Exported = ?Q("-export([" ++ ExportedStr ++ "])."),
+    Functions = [ ?Q("'@_F'() -> [].") || F <- [HookFuns]],
     Forms = lists:flatten([Module, Exported, Functions]),
     merl:compile_and_load(Forms, [verbose]),
     %% run build hooks
@@ -642,23 +660,23 @@ basic_test() ->
                           ?assertEqual([ok, ok], Res)
                   end, Hooks),
 
-    FoundA = hooks_list:find(a),
+    FoundA = hooks:find(a),
     ?assertEqual({ok, [{?MODULE, hook1}, {?MODULE, hook2}]}, FoundA),
-    FoundB = hooks_list:find(b),
+    FoundB = hooks:find(b),
     ?assertEqual({ok, [{?MODULE, hook1}, {?MODULE, hook2}]}, FoundB),
-    ?assertEqual(hook_not_found, hooks_list:find(c)),
+    ?assertEqual(error, hooks:find(c)),
     ok = hooks:reg(c, ?MODULE, hook3, 3),
-    ?assertEqual({ok, [{?MODULE, hook3}]}, hooks_list:find(c)),
+    ?assertEqual({ok, [{?MODULE, hook3}]}, hooks:find(c)),
     ?assertEqual(ok, hooks:unreg(c, ?MODULE, hook3, 3)),
-    ?assertEqual(hook_not_found, hooks_list:find(c)),
+    ?assertEqual(error, hooks:find(c)),
     ?assertEqual({error, hooks_not_exported}, hooks:reg(c, ?MODULE, hook3, 2)),
 
     lists:foreach(fun({Name, Specs}) ->
                           Res = [hooks:unreg(Name, M, F, A) || {M, F, A} <- Specs],
                           ?assertEqual([ok, ok], Res)
                   end, Hooks),
-    ?assertEqual(hook_not_found, hooks_list:find(a)),
-    ?assertEqual(hook_not_found, hooks_list:find(b)),
+    ?assertEqual(error, hooks:find(a)),
+    ?assertEqual(error, hooks:find(b)),
     ok.
 
 mreg_test() ->
@@ -669,13 +687,13 @@ mreg_test() ->
              {b, [{?MODULE, hook1, 2},
                   {?MODULE, hook2, 2}]}],
     ?assertEqual(ok, hooks:mreg(Hooks)),
-    FoundA = hooks_list:find(a),
+    FoundA = hooks:find(a),
     ?assertEqual({ok, [{?MODULE, hook1}, {?MODULE, hook2}]}, FoundA),
-    FoundB = hooks_list:find(b),
+    FoundB = hooks:find(b),
     ?assertEqual({ok, [{?MODULE, hook1}, {?MODULE, hook2}]}, FoundB),
     ?assertEqual(ok, hooks:munreg(Hooks)),
-    ?assertEqual(hook_not_found, hooks_list:find(a)),
-    ?assertEqual(hook_not_found, hooks_list:find(b)),
+    ?assertEqual(error, hooks:find(a)),
+    ?assertEqual(error, hooks:find(b)),
     ok.
 
 run_test() ->
@@ -690,7 +708,7 @@ run_test() ->
     ok = hooks:mreg(Hooks),
     ?assertEqual(ok, hooks:run(a, [])),
     ?assertEqual([1, 1], hooks:run_fold(a, [1], [])),
-    ?assertEqual({ok, [{?MODULE, hook_add}, {?MODULE, hook_add1}]}, hooks_list:find(c)),
+    ?assertEqual({ok, [{?MODULE, hook_add}, {?MODULE, hook_add1}]}, hooks:find(c)),
     ?assertEqual(4, hooks:run_fold(c, [], 1)),
     ok = hooks:munreg(Hooks),
     ok.
@@ -733,13 +751,13 @@ only_test() ->
     ok = hooks:reg(a, ?MODULE, hook_add2, 1, 0),
 
     ?assertEqual({ok, [{?MODULE, hook_add2}, {?MODULE, hook_add}]},
-                 hooks_list:find(a)),
+                 hooks:find(a)),
 
     ?assertEqual(3, hooks:only(a, [1])),
 
     ok = hooks:unreg(a, ?MODULE, hook_add, 1, 10),
     ok = hooks:unreg(a, ?MODULE, hook_add2, 1, 0),
-    ?assertEqual(hook_not_found, hooks_list:find(a)),
+    ?assertEqual(error, hooks:find(a)),
     ok.
 
 plugin_test() ->
@@ -753,13 +771,13 @@ plugin_test() ->
     application:set_env(hooks, hooks, Hooks),
     hooks:enable_plugin(hooks),
 
-    FoundA = hooks_list:find(a),
+    FoundA = hooks:find(a),
     ?assertEqual({ok, [{?MODULE, hook1}, {?MODULE, hook2}]}, FoundA),
-    FoundB = hooks_list:find(b),
+    FoundB = hooks:find(b),
     ?assertEqual({ok, [{?MODULE, hook1}, {?MODULE, hook2}]}, FoundB),
     ?assertEqual(ok, hooks:disable_plugin(hooks)),
-    ?assertEqual(hook_not_found, hooks_list:find(a)),
-    ?assertEqual(hook_not_found, hooks_list:find(b)),
+    ?assertEqual(error, hooks:find(a)),
+    ?assertEqual(error, hooks:find(b)),
     ?assertEqual(ok, hooks:disable_plugin(hooks)),
     ok.
 
@@ -792,13 +810,13 @@ wait_for_proc_test() ->
 
     hooks:mreg(Hooks),
 
-    ?assertEqual(hook_not_found, hooks_list:find(a)),
+    ?assertEqual(error, hooks:find(a)),
     Self = self(),
     Pid = spawn_link(fun() -> init_test_wait_loop(Self) end),
     receive
         Pid -> ok
     end,
-    FoundA = hooks_list:find(a),
+    FoundA = hooks:find(a),
     ?assertEqual({ok, [{?MODULE, hook1}, {?MODULE, hook2}]}, FoundA),
     exit(Pid, normal),
 
