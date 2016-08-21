@@ -8,7 +8,7 @@ __Version:__ 1.2.0
 
 # hooks
 
-`hooks` is a generic Hooks system for Erlang applications. It allows you to
+`hooks` is a generic Hooks system for Erlang and Elixir applications. It allows you to
 augment your application by adding hooks to your application aka
 [Hooking](https://en.wikipedia.org/wiki/Hooking).
 
@@ -25,6 +25,7 @@ Main Features are:
 
 Full application API is available in [`hooks`](http://github.com/barrel-db/hooks/blob/master/doc/hooks.md) .
 
+For usage samples with Elixir, check [`tests`](hooks/test/hooks_test.exs) and [`hooks`](hooks/lib/hooks.ex)
 ### adding hooks manually
 
 Your application can add hooks using the following methods
@@ -55,6 +56,38 @@ Hooks = [{a, [{?MODULE, hook1, 0},
 ok = hooks:mreg(Hooks),
 %% unregister multiple hooks
 ok = hooks:munreg(Hooks)
+```
+
+## Using hooks with Elixir
+
+Add hooks to your mix app by adding hooks to your list of dependencies, 
+
+```
+[{:consolex, "~> 0.1.0"}]
+
+## [{:consolex, git: "https://github.com/sivsushruth/consolex"}]
+```
+
+Sample code usage is as follows:
+
+```
+defmodule Demo do
+    def run do
+        Application.ensure_all_started(:hooks)
+        hooks = [
+                    {:a, [{__MODULE__, :hook1, 1}, {__MODULE__, :hook1, 1}]}, 
+                    {:b, [{__MODULE__, :hook1, 1}, {__MODULE__, :hook1, 1}]}
+                ]
+                
+        IO.inspect Hooks.mreg(hooks)
+        IO.inspect Hooks.find(:b)
+        IO.inspect Hooks.all(:b, [1])
+    end
+
+    def hook1(args) do
+        [ok: args]
+    end
+end
 ```
 
 ### Enable/Disable Plugins
