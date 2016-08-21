@@ -24,13 +24,13 @@
 
 @copyright 2015-2016 Benoît Chesneau.
 @version 2.0.0
-@title hooks - Generic Hooks system for Erlang applications
+@title hooks - Generic Hooks system for Erlang and Elixir pplications
 
 @doc
 
 # hooks
 
-`hooks' is a generic Hooks system for Erlang applications. It allows you to
+`hooks' is a generic Hooks system for **Erlang** and **Elixir** applications. It allows you to
 augment your application by adding hooks to your application aka
 [Hooking](https://en.wikipedia.org/wiki/Hooking).
 
@@ -46,7 +46,7 @@ Main Features are:
 
 
 
-## Usage
+## Usage in Erlang Applications
 
 Full application API is available in {@link hooks} .
 
@@ -147,7 +147,7 @@ When enabling a plugin the application is generally started like any OTP applica
 To do it create an `Application' module and add to it the functions `start/0' and `stop/0'. `Application:start/0' should return ok or an error if it can't be started.
 
 
-## Using hooks with Elixir
+## Usage in Elixir applications
 
 Add hooks to your mix app by adding hooks to your list of dependencies,
 
