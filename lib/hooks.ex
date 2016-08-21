@@ -1,12 +1,12 @@
 defmodule Hooks do
-    defdelegate reg(atom, atom, integer), to: :hooks
-    defdelegate reg(atom, atom, atom, integer), to: :hooks
-    defdelegate reg(atom, atom, atom, integer, integer), to: :hooks
-    defdelegate unreg(atom, atom, integer), to: :hooks
-    defdelegate unreg(atom, atom, atom, integer), to: :hooks
-    defdelegate unreg(atom, atom, atom, integer, integer), to: :hooks
-    defdelegate mreg(list), to: :hooks
-    defdelegate munreg(list), to: :hooks
+    defdelegate reg(module, fun, arity), to: :hooks
+    defdelegate reg(name, module, fun, arity), to: :hooks
+    defdelegate reg(name, module, fun, arity, priority), to: :hooks
+    defdelegate unreg(module, fun, arity), to: :hooks
+    defdelegate unreg(name, module, fun, arity), to: :hooks
+    defdelegate unreg(name, module, fun, arity, priority), to: :hooks
+    defdelegate mreg(hooks), to: :hooks
+    defdelegate munreg(hooks), to: :hooks
     defdelegate find(atom), to: :hooks
     defdelegate all(atom, list), to: :hooks
     defdelegate all_till_ok(atom, list), to: :hooks
