@@ -15,5 +15,5 @@ defmodule Hooks do
     defdelegate enable_plugin(atom, list), to: :hooks
     defdelegate only(atom, list), to: :hooks
     defdelegate run(atom ,list), to: :hooks
-    defdelegate run_fold(atom, list, list), to: :hooks
+    defdelegate run_fold(atom, list, any), to: :hooks
 end
