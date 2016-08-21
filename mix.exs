@@ -4,7 +4,6 @@ defmodule Hooks.Mixfile do
   def project do
     [app: :hooks,
      version: "1.2.0",
-     elixir: "~> 1.2.4",
      description: "Generic plugin & hook system",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
