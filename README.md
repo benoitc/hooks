@@ -71,7 +71,7 @@ Add hooks to your mix app by adding hooks to your list of dependencies,
 Sample code usage is as follows:
 
 ```
-defmodule Demo do
+defmodule DemoMReg do
     def run do
         Application.ensure_all_started(:hooks)
         hooks = [
@@ -88,6 +88,21 @@ defmodule Demo do
         [ok: args]
     end
 end
+
+defmodule DemoReg do
+    def run do
+        Application.ensure_all_started(:hooks)
+        IO.inspect Hooks.reg(:c, __MODULE__, :hook1, 1)
+        IO.inspect Hooks.find(:c)
+        IO.inspect Hooks.all(:c, [1])
+    end
+
+    def hook1(args) do
+        [ok: args]
+    end
+end
+
+
 ```
 
 ### Enable/Disable Plugins
