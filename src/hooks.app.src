@@ -3,7 +3,7 @@
 
 {application, 'hooks',
  [{description, "generic plugin & hook system"},
-  {vsn, "2.0.0"},
+  {vsn, "2.0.1"},
   {registered, [hooks_sup]},
   {mod, {'hooks_app', []}},
   {applications,
@@ -16,5 +16,17 @@
   {maintainers, ["Benoit Chesneau"]},
   {licenses, ["BSD"]},
   {links, [{"Github", "https://github.com/barrel-db/hooks"}]},
+  {files, [
+    "src",
+    "include",
+    "lib",
+    "mix.exs",
+    "rebar.config",
+    "rebar.lock",
+    "README.md",
+    "NEWS.md",
+    "LICENSE",
+    "NOTICE",
+    "MAINTAINERS"]},
   {build_tools, [<<"rebar3">>, <<"mix">>]}
  ]}.
