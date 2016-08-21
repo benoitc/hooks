@@ -15,5 +15,6 @@
 
   {maintainers, ["Benoit Chesneau"]},
   {licenses, ["BSD"]},
-  {links, [{"Github", "https://github.com/barrel-db/hooks"}]}
+  {links, [{"Github", "https://github.com/barrel-db/hooks"}]},
+  {build_tools, [<<"rebar3">>, <<"mix">>]}
  ]}.
