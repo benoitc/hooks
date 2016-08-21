@@ -13,9 +13,9 @@ install:
 - mix deps.get
 
 script:
-- ./rebar3 eunit --dir="test"
 - mix compile
 - mix test
+- ./rebar3 eunit
 
 notifications:
   email:
