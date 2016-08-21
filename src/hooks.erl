@@ -514,9 +514,9 @@ check_hooks([{_Priority, MFA}=Hook | Rest], Hooks) ->
 
 check_mfa({Mod, Fun, Arity}) ->
   _ = code:ensure_loaded(Mod),
-  case erlang:function_exported(Mod, Fun, Arity) of
-    true -> ok;
-    false -> {error, hooks_not_exported}
+  case lists:member({Fun, Arity}, Mod:module_info(exports)) of
+    true -> ok;  
+    false -> {error, hooks_not_exported} 
   end.
 
 maybe_build_hooks(#state{ready=false}) -> ok;
