@@ -153,9 +153,9 @@ To do it create an `Application' module and add to it the functions `start/0' an
 Add hooks to your mix app by adding hooks to your list of dependencies,
 
 ```
-[{:consolex, "~> 0.1.0"}]
+[{:hooks, "~> 2.0.0"}]
 
-## [{:consolex, git: "https://github.com/sivsushruth/consolex"}]
+## [{:hooks, git: "https://github.com/barrel-db/hooks"}]
 '''
 
 Sample code usage is as follows:
