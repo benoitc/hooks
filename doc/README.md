@@ -2,15 +2,15 @@
 
 # hooks - Generic Hooks system for Erlang and Elixir pplications #
 
-Copyright (c) 2015-2016 Benoît Chesneau.
+Copyright (c) 2015-2017 Benoît Chesneau.
 
-__Version:__ 2.0.0
+__Version:__ 2.0.2
 
 # hooks
 
 `hooks` is a generic Hooks system for **Erlang** applications. It allows you to
 augment your application by adding hooks to your application aka
-[Hooking](https://en.wikipedia.org/wiki/Hooking). Hooks can also be [used easily 
+[Hooking](https://en.wikipedia.org/wiki/Hooking). Hooks can also be [used easily
 with Elixir applications](#usage-in-elixir-applications).
 
 [![Build Status](https://travis-ci.org/barrel-db/hooks.png?branch=master)](https://travis-ci.org/barrel-db/hooks)

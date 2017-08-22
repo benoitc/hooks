@@ -4,7 +4,7 @@
 %%
 %% hooks: generic Erlang hooks application
 %%
-%% Copyright (c) 2015-2016 Benoit Chesneau <benoitc@benoitcnetwork.eu>
+%% Copyright (c) 2015-2017 Benoit Chesneau <benoitc@benoitcnetwork.eu>
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -515,8 +515,8 @@ check_hooks([{_Priority, MFA}=Hook | Rest], Hooks) ->
 check_mfa({Mod, Fun, Arity}) ->
   _ = code:ensure_loaded(Mod),
   case lists:member({Fun, Arity}, Mod:module_info(exports)) of
-    true -> ok;  
-    false -> {error, hooks_not_exported} 
+    true -> ok;
+    false -> {error, hooks_not_exported}
   end.
 
 maybe_build_hooks(#state{ready=false}) -> ok;

@@ -22,8 +22,8 @@
 %% THE SOFTWARE.
 %%==============================================================================
 
-@copyright 2015-2016 Benoît Chesneau.
-@version 2.0.1
+@copyright 2015-2017 Benoît Chesneau.
+@version 2.0.2
 @title hooks - Generic Hooks system for Erlang and Elixir pplications
 
 @doc
