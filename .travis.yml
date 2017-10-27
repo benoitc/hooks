@@ -5,7 +5,6 @@ otp_release:
 - 18.0
 - 18.1
 - 19.0
-- 20.0
 sudo: true
 install:
 - "./support/bootstrap_travis.sh"
