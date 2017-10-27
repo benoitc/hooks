@@ -3,7 +3,7 @@ defmodule Hooks.Mixfile do
 
   def project do
     [app: :hooks,
-     version: "2.0.2",
+     version: "2.1.0",
      description: "Generic plugin & hook system",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,

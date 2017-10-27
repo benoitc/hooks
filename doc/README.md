@@ -2,9 +2,9 @@
 
 # hooks - Generic Hooks system for Erlang and Elixir pplications #
 
-Copyright (c) 2015-2017 Benoît Chesneau.
+Copyright (c) 2015-2017 Benoit Chesneau.
 
-__Version:__ 2.0.2
+__Version:__ 2.1.0
 
 # hooks
 
