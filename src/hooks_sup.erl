@@ -53,10 +53,9 @@ start_link() -> supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 %%====================================================================
 
 init([]) ->
-	Hooks = {hooks, {hooks, start_link, []}, permanent, 5000, worker, [hooks]},
-
+	Hooks = {hooks,
+					 {hooks, start_link, []},
+					 permanent, 5000, worker,
+					 [hooks]},
+	
 	{ok, { {one_for_all, 0, 1}, [Hooks]} }.
-
-%%====================================================================
-%% Internal functions
-%%====================================================================
