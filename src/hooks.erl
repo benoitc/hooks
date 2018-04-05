@@ -257,9 +257,7 @@ start_link() ->
 init_tabs() ->
   case ets:info(?TAB, name) of
     undefined ->
-      ets:new(?TAB, [ordered_set, public, named_table,
-        {read_concurrency, true},
-        {write_concurrency, true}]);
+      ets:new(?TAB, [ordered_set, protected, named_table]);
     _ ->
       true
   end.
