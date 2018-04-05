@@ -70,7 +70,7 @@
 
 -type hook() :: {atom(), atom(), non_neg_integer()}
 | {atom(), atom(), non_neg_integer(), integer()}.
--type hookname() :: any().
+-type hookname() :: atom().
 -type hooks() :: [{hookname(), [hook()]}].
 
 -export_type([hook/0, hookname/0, hooks/0]).
