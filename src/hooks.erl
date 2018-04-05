@@ -250,20 +250,11 @@ find(HookName) ->
 
 %% @hidden
 start_link() ->
-  _ = init_tabs(),
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
-
-
-init_tabs() ->
-  case ets:info(?TAB, name) of
-    undefined ->
-      ets:new(?TAB, [ordered_set, protected, named_table]);
-    _ ->
-      true
-  end.
 
 %% @hidden
 init([]) ->
+  ets:new(?TAB, [ordered_set, protected, named_table]),
   Ready = case application:get_env(hooks, wait_for_proc) of
             {ok, Proc} when is_atom(Proc) ->
               spawn_waiter(self(), Proc),
