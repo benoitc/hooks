@@ -449,7 +449,7 @@ do_enable_plugin(Application, Paths) ->
 
 do_disable_plugin(Application) ->
   case lists:keyfind(Application, 1, application:loaded_applications()) of
-    true ->
+    {Application, _, _} ->
       Exports = Application:module_info(exports),
       case lists:member({stop, 0}, Exports) of
         true -> Application:stop();
