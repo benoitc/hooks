@@ -70,7 +70,7 @@
 
 -type hook() :: {atom(), atom(), non_neg_integer()}
 | {atom(), atom(), non_neg_integer(), integer()}.
--type hookname() :: any().
+-type hookname() :: atom().
 -type hooks() :: [{hookname(), [hook()]}].
 
 -export_type([hook/0, hookname/0, hooks/0]).
@@ -112,7 +112,7 @@ unreg(HookName, Module, Fun, Arity, Priority) ->
   gen_server:call(?MODULE, {unreg, HookName, {Priority, {Module, Fun, Arity}}}).
 
 %% @doc register multiple hooks
--spec mreg(Hooks::hooks()) -> ok | {error, term()}.
+-spec mreg(Hooks::hooks()) -> ok | {error, term()}.
 mreg(Hooks) ->
   gen_server:call(?MODULE, {mreg, Hooks}).
 
@@ -125,12 +125,12 @@ munreg(Hooks) ->
 %% This function will start an application if not started and register hooks
 %% from it if none have been registered before. Hooks are loaded from the
 %% `hooks' key in the application environnement
--spec enable_plugin(Application::atom()) -> ok | {error, term()}.
+-spec enable_plugin(Application::atom()) -> ok | {error, term()}.
 enable_plugin(Application) ->
   enable_plugin(Application, []).
 
 %% @doc enable a plugin and load paths if needed
--spec enable_plugin(Application::atom(), Paths::[string()]) -> ok | {error, term()}.
+-spec enable_plugin(Application::atom(), Paths::[string()]) -> ok | {error, term()}.
 enable_plugin(Application, Paths)
   when is_atom(Application), is_list(Paths) ->
   gen_server:call(?MODULE, {enable_plugin, Application, Paths}).
@@ -257,9 +257,7 @@ start_link() ->
 init_tabs() ->
   case ets:info(?TAB, name) of
     undefined ->
-      ets:new(?TAB, [ordered_set, public, named_table,
-        {read_concurrency, true},
-        {write_concurrency, true}]);
+      ets:new(?TAB, [ordered_set, protected, named_table]);
     _ ->
       true
   end.
@@ -449,7 +447,7 @@ do_enable_plugin(Application, Paths) ->
 
 do_disable_plugin(Application) ->
   case lists:keyfind(Application, 1, application:loaded_applications()) of
-    true ->
+    {Application, _, _} ->
       Exports = Application:module_info(exports),
       case lists:member({stop, 0}, Exports) of
         true -> Application:stop();

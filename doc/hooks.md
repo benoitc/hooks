@@ -28,7 +28,7 @@ hook() = {atom(), atom(), non_neg_integer()} | {atom(), atom(), non_neg_integer(
 
 
 <pre><code>
-hookname() = any()
+hookname() = atom()
 </code></pre>
 
 
