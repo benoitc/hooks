@@ -19,7 +19,10 @@
   end_per_testcase/1
 ]).
 
+-export([start/0, stop/0]).
 
+start() -> ok.
+stop() -> ok.
 
 all() ->
   [
@@ -214,15 +217,15 @@ plugin_test(_) ->
            {b, [{?MODULE, hook1, 2},
                 {?MODULE, hook2, 2}]}],
   
-  application:set_env(hooks, hooks, Hooks),
-  hooks:enable_plugin(hooks),
+  application:set_env(?MODULE, hooks, Hooks),
+  hooks:enable_plugin(?MODULE),
   
   {ok, [{?MODULE, hook1}, {?MODULE, hook2}]} = hooks:find(a),
   {ok, [{?MODULE, hook1}, {?MODULE, hook2}]} = hooks:find(b),
-  ok = hooks:disable_plugin(hooks),
+  ok = hooks:disable_plugin(?MODULE),
   error = hooks:find(a),
   error = hooks:find(b),
-  ok = hooks:disable_plugin(hooks),
+  ok = hooks:disable_plugin(?MODULE),
   ok.
 
 init_test_wait_loop(Server) ->
