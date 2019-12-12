@@ -7,8 +7,8 @@ defmodule Hooks.Mixfile do
      description: "Generic plugin & hook system",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps,
-     package: package]
+     deps: deps(),
+     package: package()]
   end
 
   def application do
