@@ -1,6 +1,6 @@
 
 
-# hooks - Generic Hooks system for Erlang and Elixir pplications #
+# hooks - Generic Hooks system for Erlang and Elixir applications #
 
 Copyright (c) 2015-2017 Benoit Chesneau.
 
