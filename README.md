@@ -1,6 +1,6 @@
 
 
-# hooks - Generic Hooks system for Erlang and Elixir pplications #
+# hooks - Generic Hooks system for Erlang and Elixir applications #
 
 Copyright (c) 2015-2017 Benoit Chesneau.
 
@@ -33,7 +33,7 @@ Your application can add hooks using the following methods
 - `hooks:reg/{3, 4, 5}` to register a hook from a module
 - `hook:unreg/{3, 5, 5}` to unregister a hook.
 
-```
+```erlang
 ok = hooks:reg(a, ?MODULE, hook_add, 1, 10),
 ok = hooks:reg(a, ?MODULE, hook_add2, 1, 0),
 ```
@@ -45,7 +45,7 @@ ok = hooks:reg(a, ?MODULE, hook_add2, 1, 0),
 
 Ex:
 
-```
+```erlang
 Hooks = [{a, [{?MODULE, hook1, 0},
               {?MODULE, hook2, 0}]},
          {b, [{?MODULE, hook1, 2},
@@ -64,7 +64,7 @@ Plugins are simple Erlang applications that exposes hooks. A plugin can be enabl
 
 To expose the hooks,  just add them to application environment settings. Example:
 
-```
+```erlang
 {application, 'myapp',
  [{description, ""},
   {vsn, "1.0.0"},
@@ -121,7 +121,7 @@ To do it create an `Application` module and add to it the functions `start/0` an
 
 Add hooks to your mix app by adding hooks to your list of dependencies,
 
-```
+```elixir
 [{:hooks, "~> 2.0.0"}]
 
 ## [{:hooks, git: "https://github.com/barrel-db/hooks"}]
@@ -129,7 +129,7 @@ Add hooks to your mix app by adding hooks to your list of dependencies,
 
 Sample code usage is as follows:
 
-```
+```elixir
 defmodule DemoMReg do
     def run do
         Application.ensure_all_started(:hooks)
