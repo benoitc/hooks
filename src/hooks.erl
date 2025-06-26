@@ -424,7 +424,7 @@ ready(info, _Info, _State) ->
 
 ready(internal, {deferred_call, {reg, HookName, {Priority, MFA}}}, _State) ->
   %% Process deferred registration
-  do_reg(HookName, {Priority, MFA}),
+  _ = do_reg(HookName, {Priority, MFA}),
   keep_state_and_data;
 
 ready(internal, {deferred_call, {unreg, HookName, {Priority, MFA}}}, _State) ->
@@ -434,7 +434,7 @@ ready(internal, {deferred_call, {unreg, HookName, {Priority, MFA}}}, _State) ->
 
 ready(internal, {deferred_call, {mreg, Hooks}}, _State) ->
   %% Process deferred multi-registration
-  do_mreg(Hooks),
+  _ = do_mreg(Hooks),
   keep_state_and_data;
 
 ready(internal, {deferred_call, {munreg, Hooks}}, _State) ->
