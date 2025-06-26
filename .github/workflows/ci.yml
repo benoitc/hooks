@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        otp_version: ['27.0', '28.0']
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Erlang/OTP
+      uses: erlef/setup-beam@v1
+      with:
+        otp-version: ${{ matrix.otp_version }}
+        
+    - name: Install rebar3
+      run: |
+        wget https://github.com/erlang/rebar3/releases/download/3.25.0/rebar3
+        chmod +x rebar3
+        
+    - name: Compile
+      run: ./rebar3 compile
+        
+    - name: Run tests
+      run: ./rebar3 ct
+      
+    - name: Run dialyzer
+      run: ./rebar3 dialyzer
+      continue-on-error: true

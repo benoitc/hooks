@@ -4,7 +4,7 @@
 %%
 %% hooks: generic Erlang hooks application
 %%
-%% Copyright (c) 2015-2017 Benoi Chesneau <benoitc@benoitcnetwork.eu>
+%% Copyright (c) 2015-2025 Benoît Chesneau
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -25,11 +25,6 @@
 %% THE SOFTWARE.
 %% -------------------------------------------------------------------
 
-
-%%%-------------------------------------------------------------------
-%% @doc hooks public API
-%% @end
-%%%-------------------------------------------------------------------
 
 -module('hooks_app').
 

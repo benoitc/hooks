@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.38.2">
+    <meta name="project" content="hooks v3.0.0">
+
+
+    <title>hooks — hooks v3.0.0</title>
+
+    <link rel="stylesheet" href="dist/html-erlang-DQDXQC7W.css" />
+
+    <script defer src="dist/sidebar_items-C17CD605.js"></script>
+    <script defer src="docs_config.js"></script>
+    <script defer src="dist/html-DPJLHKSM.js"></script>
+
+  </head>
+  <body>
+    <script>(()=>{var t="ex_doc:settings",e="dark";var o="dark",s="light";var E="sidebar_state",n="closed";var r="sidebar_width";var a="sidebar-open";var i=new URLSearchParams(window.location.search),S=i.get("theme")||JSON.parse(localStorage.getItem(t)||"{}").theme;(S===o||S!==s&&window.matchMedia("(prefers-color-scheme: dark)").matches)&&document.body.classList.add(e);var d=sessionStorage.getItem(E),A=d!==n&&!window.matchMedia(`screen and (max-width: ${768}px)`).matches;document.body.classList.toggle(a,A);var c=sessionStorage.getItem(r);c&&document.body.style.setProperty("--sidebarWidth",`${c}px`);var p=/(Macintosh|iPhone|iPad|iPod)/.test(window.navigator.userAgent);document.documentElement.classList.toggle("apple-os",p);})();
+</script>
+
+<div class="body-wrapper">
+
+<button id="sidebar-menu" class="sidebar-button sidebar-toggle" aria-label="toggle sidebar" aria-controls="sidebar">
+  <i class="ri-menu-line ri-lg" title="Collapse/expand sidebar"></i>
+</button>
+
+<nav id="sidebar" class="sidebar">
+
+  <div class="sidebar-header">
+    <div class="sidebar-projectInfo">
+
+      <div>
+        <a href="readme.html" class="sidebar-projectName" translate="no">
+hooks
+        </a>
+        <div class="sidebar-projectVersion" translate="no">
+          v3.0.0
+        </div>
+      </div>
+    </div>
+    <ul id="sidebar-list-nav" class="sidebar-list-nav" role="tablist" data-extras=""></ul>
+  </div>
+</nav>
+
+<output role="status" id="toast"></output>
+
+<main class="content page-module" id="main" data-type="modules">
+  <div id="content" class="content-inner">
+    <div class="top-search">
+      <div class="search-settings">
+        <form class="search-bar" action="search.html">
+          <label class="search-label">
+            <span class="sr-only">Search documentation of hooks</span>
+            <input name="q" type="text" class="search-input" placeholder="Press / to search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+          </label>
+          <button type="submit" class="search-button" aria-label="Submit Search" tabindex="-1">
+            <i class="ri-search-2-line ri-lg" aria-hidden="true"></i>
+          </button>
+          <button type="button" tabindex="-1" class="search-close-button" aria-hidden="true">
+            <i class="ri-close-line ri-lg" title="Cancel search"></i>
+          </button>
+        </form>
+        <div class="autocomplete">
+        </div>
+        <button class="icon-settings display-settings">
+          <i class="ri-settings-3-line"></i>
+          <span class="sr-only">Settings</span>
+        </button>
+      </div>
+    </div>
+
+<div id="top-content">
+  <div class="heading-with-actions top-heading">
+    <h1>
+      <span translate="no">hooks</span> 
+      <small class="app-vsn" translate="no">(hooks v3.0.0)</small>
+
+    </h1>
+
+      <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L28" title="View Source" class="icon-action" rel="help">
+        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        <span class="sr-only">View Source</span>
+      </a>
+
+  </div>
+
+
+    <section id="moduledoc">
+<p>Generic hooks system for Erlang applications.</p><h2 id="module-overview" class="section-heading"><a href="#module-overview" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Overview</span></h2><p>The <code class="inline">hooks</code> module provides a flexible and efficient hooks system that allows you to create
+extension points in your application. Hooks enable you to register multiple functions that
+will be called at specific points in your code, similar to events or callbacks but with
+more flexibility.</p><h2 id="module-features" class="section-heading"><a href="#module-features" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Features</span></h2><ul><li>Priority-based execution order</li><li>Multiple execution strategies (run, fold, all, all_till_ok, only)</li><li>Plugin system with automatic hook registration</li><li>Efficient storage using persistent_term</li><li>Support for deferred initialization</li></ul><h2 id="module-examples" class="section-heading"><a href="#module-examples" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Examples</span></h2><h3 id="module-basic-hook-registration" class="section-heading"><a href="#module-basic-hook-registration" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Basic Hook Registration</span></h3><pre><code class="makeup erlang" translate="no"><span class="c1">%% Register a hook function</span><span class="w">
+</span><span class="ss">ok</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">hooks</span><span class="p">:</span><span class="nf">reg</span><span class="p" data-group-id="6626074032-1">(</span><span class="ss">on_user_login</span><span class="p">,</span><span class="w"> </span><span class="ss">my_module</span><span class="p">,</span><span class="w"> </span><span class="ss">log_login</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p" data-group-id="6626074032-1">)</span><span class="p">.</span><span class="w">
+
+</span><span class="c1">%% Run the hook</span><span class="w">
+</span><span class="ss">ok</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">hooks</span><span class="p">:</span><span class="nf">run</span><span class="p" data-group-id="6626074032-2">(</span><span class="ss">on_user_login</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="6626074032-3">[</span><span class="n">UserId</span><span class="p">,</span><span class="w"> </span><span class="n">Timestamp</span><span class="p" data-group-id="6626074032-3">]</span><span class="p" data-group-id="6626074032-2">)</span><span class="p">.</span><span class="w">
+
+</span><span class="c1">%% Unregister the hook</span><span class="w">
+</span><span class="ss">ok</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">hooks</span><span class="p">:</span><span class="nf">unreg</span><span class="p" data-group-id="6626074032-4">(</span><span class="ss">on_user_login</span><span class="p">,</span><span class="w"> </span><span class="ss">my_module</span><span class="p">,</span><span class="w"> </span><span class="ss">log_login</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p" data-group-id="6626074032-4">)</span><span class="p">.</span></code></pre><h3 id="module-using-plugins" class="section-heading"><a href="#module-using-plugins" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Using Plugins</span></h3><pre><code class="makeup erlang" translate="no"><span class="c1">%% Enable a plugin that registers its own hooks</span><span class="w">
+</span><span class="ss">ok</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">hooks</span><span class="p">:</span><span class="nf">enable_plugin</span><span class="p" data-group-id="2650599732-1">(</span><span class="ss">my_plugin</span><span class="p" data-group-id="2650599732-1">)</span><span class="p">.</span><span class="w">
+
+</span><span class="c1">%% Disable the plugin and unregister its hooks</span><span class="w">
+</span><span class="ss">ok</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">hooks</span><span class="p">:</span><span class="nf">disable_plugin</span><span class="p" data-group-id="2650599732-2">(</span><span class="ss">my_plugin</span><span class="p" data-group-id="2650599732-2">)</span><span class="p">.</span></code></pre><h3 id="module-different-execution-strategies" class="section-heading"><a href="#module-different-execution-strategies" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Different Execution Strategies</span></h3><pre><code class="makeup erlang" translate="no"><span class="c1">%% Run all hooks until one returns &#39;stop&#39;</span><span class="w">
+</span><span class="ss">ok</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">hooks</span><span class="p">:</span><span class="nf">run</span><span class="p" data-group-id="6010897882-1">(</span><span class="ss">before_save</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="6010897882-2">[</span><span class="n">Data</span><span class="p" data-group-id="6010897882-2">]</span><span class="p" data-group-id="6010897882-1">)</span><span class="p">.</span><span class="w">
+
+</span><span class="c1">%% Fold over hooks with an accumulator</span><span class="w">
+</span><span class="n">Result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">hooks</span><span class="p">:</span><span class="nf">run_fold</span><span class="p" data-group-id="6010897882-3">(</span><span class="ss">transform_data</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="6010897882-4">[</span><span class="n">Input</span><span class="p" data-group-id="6010897882-4">]</span><span class="p">,</span><span class="w"> </span><span class="n">InitialAcc</span><span class="p" data-group-id="6010897882-3">)</span><span class="p">.</span><span class="w">
+
+</span><span class="c1">%% Get all results from all hooks</span><span class="w">
+</span><span class="n">Results</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">hooks</span><span class="p">:</span><span class="nf">all</span><span class="p" data-group-id="6010897882-5">(</span><span class="ss">validate_data</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="6010897882-6">[</span><span class="n">Data</span><span class="p" data-group-id="6010897882-6">]</span><span class="p" data-group-id="6010897882-5">)</span><span class="p">.</span><span class="w">
+
+</span><span class="c1">%% Run until one returns ok or {ok, Value}</span><span class="w">
+</span><span class="k">case</span><span class="w"> </span><span class="nc">hooks</span><span class="p">:</span><span class="nf">all_till_ok</span><span class="p" data-group-id="6010897882-7">(</span><span class="ss">authenticate</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="6010897882-8">[</span><span class="n">User</span><span class="p">,</span><span class="w"> </span><span class="n">Pass</span><span class="p" data-group-id="6010897882-8">]</span><span class="p" data-group-id="6010897882-7">)</span><span class="w"> </span><span class="k">of</span><span class="w">
+    </span><span class="ss">ok</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="ss">authenticated</span><span class="p">;</span><span class="w">
+    </span><span class="p" data-group-id="6010897882-9">{</span><span class="ss">ok</span><span class="p">,</span><span class="w"> </span><span class="n">UserInfo</span><span class="p" data-group-id="6010897882-9">}</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="p" data-group-id="6010897882-10">{</span><span class="ss">authenticated</span><span class="p">,</span><span class="w"> </span><span class="n">UserInfo</span><span class="p" data-group-id="6010897882-10">}</span><span class="p">;</span><span class="w">
+    </span><span class="p" data-group-id="6010897882-11">{</span><span class="ss">error</span><span class="p">,</span><span class="w"> </span><span class="n">Reasons</span><span class="p" data-group-id="6010897882-11">}</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="p" data-group-id="6010897882-12">{</span><span class="ss">failed</span><span class="p">,</span><span class="w"> </span><span class="n">Reasons</span><span class="p" data-group-id="6010897882-12">}</span><span class="w">
+</span><span class="k">end</span><span class="p">.</span></code></pre><h2 id="module-configuration" class="section-heading"><a href="#module-configuration" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Configuration</span></h2><p>The hooks application supports the following configuration options:</p><ul><li><code class="inline">{wait_for_proc, atom()}</code> - Wait for a registered process before becoming ready</li></ul><h2 id="module-since" class="section-heading"><a href="#module-since" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Since</span></h2><p>1.0.0</p>
+    </section>
+
+</div>
+
+  <section id="summary" class="details-list">
+    <h1 class="section-heading">
+      <a class="hover-link" href="#summary">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Summary</span>
+    </h1>
+<div class="summary-types summary">
+  <h2>
+    <a href="#types">Types</a>
+  </h2>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:hook/0" data-no-tooltip="" translate="no">hook()</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:hookname/0" data-no-tooltip="" translate="no">hookname()</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:hooks/0" data-no-tooltip="" translate="no">hooks()</a>
+
+      </div>
+
+    </div>
+
+</div>
+<div class="summary-functions summary">
+  <h2>
+    <a href="#functions">Functions</a>
+  </h2>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#all/2" data-no-tooltip="" translate="no">all(HookName, Args)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#all_till_ok/2" data-no-tooltip="" translate="no">all_till_ok(HookName, Args)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#callback_mode/0" data-no-tooltip="" translate="no">callback_mode()</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#code_change/4" data-no-tooltip="" translate="no">code_change(OldVsn, StateName, State, Extra)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#disable_plugin/1" data-no-tooltip="" translate="no">disable_plugin(Application)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#enable_plugin/1" data-no-tooltip="" translate="no">enable_plugin(Application)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#enable_plugin/2" data-no-tooltip="" translate="no">enable_plugin(Application, Paths)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#find/1" data-no-tooltip="" translate="no">find(HookName)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#handle_event/4" data-no-tooltip="" translate="no">handle_event(EventType, EventContent, State, Data)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#init/1" data-no-tooltip="" translate="no">init/1</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#mreg/1" data-no-tooltip="" translate="no">mreg(Hooks)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#munreg/1" data-no-tooltip="" translate="no">munreg(Hooks)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#not_ready/3" data-no-tooltip="" translate="no">not_ready/3</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#only/2" data-no-tooltip="" translate="no">only(HookName, Args)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#ready/3" data-no-tooltip="" translate="no">ready/3</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#reg/3" data-no-tooltip="" translate="no">reg(Module, Fun, Arity)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#reg/4" data-no-tooltip="" translate="no">reg(HookName, Module, Fun, Arity)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Register a function for a specific hook name.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#reg/5" data-no-tooltip="" translate="no">reg(HookName, Module, Fun, Arity, Priority)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#run/2" data-no-tooltip="" translate="no">run(HookName, Args)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#run_fold/3" data-no-tooltip="" translate="no">run_fold(HookName, Args, Acc)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#start_link/0" data-no-tooltip="" translate="no">start_link()</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#terminate/3" data-no-tooltip="" translate="no">terminate(Reason, StateName, State)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#unreg/3" data-no-tooltip="" translate="no">unreg(Module, Function, Arity)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#unreg/4" data-no-tooltip="" translate="no">unreg(HookName, Module, Fun, Arity)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#unreg/5" data-no-tooltip="" translate="no">unreg(HookName, Module, Fun, Arity, Priority)</a>
+
+      </div>
+
+    </div>
+
+</div>
+
+  </section>
+
+
+  <section id="types" class="details-list">
+    <h1 class="section-heading">
+      <a class="hover-link" href="#types">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Types</span>
+    </h1>
+    <div class="types-list">
+<section class="detail" id="t:hook/0">
+
+  <div class="detail-header">
+    <a href="#t:hook/0" class="detail-link" data-no-tooltip="" aria-label="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">hook()</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L135" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-type</span> hook() :: {<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(), <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(), <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:non_neg_integer/0">non_neg_integer</a>()} | {<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(), <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(), <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:non_neg_integer/0">non_neg_integer</a>(), <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:integer/0">integer</a>()}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="t:hookname/0">
+
+  <div class="detail-header">
+    <a href="#t:hookname/0" class="detail-link" data-no-tooltip="" aria-label="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">hookname()</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L137" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-type</span> hookname() :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:any/0">any</a>().</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="t:hooks/0">
+
+  <div class="detail-header">
+    <a href="#t:hooks/0" class="detail-link" data-no-tooltip="" aria-label="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">hooks()</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L138" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-type</span> hooks() :: [{<a href="#t:hookname/0">hookname</a>(), [<a href="#t:hook/0">hook</a>()]}].</pre>
+
+      </div>
+
+
+  </section>
+</section>
+
+    </div>
+  </section>
+
+  <section id="functions" class="details-list">
+    <h1 class="section-heading">
+      <a class="hover-link" href="#functions">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Functions</span>
+    </h1>
+    <div class="functions-list">
+<section class="detail" id="all/2">
+
+  <div class="detail-header">
+    <a href="#all/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">all(HookName, Args)</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L288" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> all(HookName :: <a href="#t:hookname/0">hookname</a>(), Args :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:list/0">list</a>()) -> [<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:any/0">any</a>()].</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="all_till_ok/2">
+
+  <div class="detail-header">
+    <a href="#all_till_ok/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">all_till_ok(HookName, Args)</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L304" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> all_till_ok(HookName :: <a href="#t:hookname/0">hookname</a>(), Args :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:list/0">list</a>()) -> ok | {ok, <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:any/0">any</a>()} | {error, <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>()}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="callback_mode/0">
+
+  <div class="detail-header">
+    <a href="#callback_mode/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">callback_mode()</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L343" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+
+  </section>
+</section>
+<section class="detail" id="code_change/4">
+
+  <div class="detail-header">
+    <a href="#code_change/4" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">code_change(OldVsn, StateName, State, Extra)</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L463" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+
+  </section>
+</section>
+<section class="detail" id="disable_plugin/1">
+
+  <div class="detail-header">
+    <a href="#disable_plugin/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">disable_plugin(Application)</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L227" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> disable_plugin(Application :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>()) -> ok.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="enable_plugin/1">
+
+  <div class="detail-header">
+    <a href="#enable_plugin/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">enable_plugin(Application)</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L216" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> enable_plugin(Application :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>()) -> ok | {error, <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>()}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="enable_plugin/2">
+
+  <div class="detail-header">
+    <a href="#enable_plugin/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">enable_plugin(Application, Paths)</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L221" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> enable_plugin(Application :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(), Paths :: [<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:string/0">string</a>()]) -> ok | {error, <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>()}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="find/1">
+
+  <div class="detail-header">
+    <a href="#find/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">find(HookName)</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L332" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> find(HookName :: <a href="#t:hookname/0">hookname</a>()) -> {ok, [{<a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(), <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>()}]} | error.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="handle_event/4">
+
+  <div class="detail-header">
+    <a href="#handle_event/4" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">handle_event(EventType, EventContent, State, Data)</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L456" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+
+  </section>
+</section>
+<section class="detail" id="init/1">
+
+  <div class="detail-header">
+    <a href="#init/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">init/1</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L347" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+
+  </section>
+</section>
+<section class="detail" id="mreg/1">
+
+  <div class="detail-header">
+    <a href="#mreg/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">mreg(Hooks)</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L203" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> mreg(Hooks :: <a href="#t:hooks/0">hooks</a>()) -> ok | {error, <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>()}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="munreg/1">
+
+  <div class="detail-header">
+    <a href="#munreg/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">munreg(Hooks)</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L208" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> munreg(Hooks :: <a href="#t:hooks/0">hooks</a>()) -> ok.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="not_ready/3">
+
+  <div class="detail-header">
+    <a href="#not_ready/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">not_ready/3</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L362" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+
+  </section>
+</section>
+<section class="detail" id="only/2">
+
+  <div class="detail-header">
+    <a href="#only/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">only(HookName, Args)</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L323" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> only(HookName :: <a href="#t:hookname/0">hookname</a>(), Args :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:list/0">list</a>()) -> <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:any/0">any</a>() | no_hook.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="ready/3">
+
+  <div class="detail-header">
+    <a href="#ready/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">ready/3</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L379" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+
+  </section>
+</section>
+<section class="detail" id="reg/3">
+
+  <div class="detail-header">
+    <a href="#reg/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">reg(Module, Fun, Arity)</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L144" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> reg(Module :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(), Fun :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(), Arity :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:non_neg_integer/0">non_neg_integer</a>()) -> ok | {error, <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>()}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="reg/4">
+
+  <div class="detail-header">
+    <a href="#reg/4" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">reg(HookName, Module, Fun, Arity)</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L172" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> reg(HookName :: <a href="#t:hookname/0">hookname</a>(), Module :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(), Fun :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(), Arity :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:non_neg_integer/0">non_neg_integer</a>()) ->
+             ok | {error, <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>()}.</pre>
+
+      </div>
+
+<p>Register a function for a specific hook name.</p><h2 id="reg/4-parameters" class="section-heading"><a href="#reg/4-parameters" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Parameters</span></h2><ul><li><code class="inline">HookName</code> - The hook identifier</li><li><code class="inline">Module</code> - The module containing the hook function</li><li><code class="inline">Fun</code> - The function name</li><li><code class="inline">Arity</code> - The function arity</li></ul><h2 id="reg/4-returns" class="section-heading"><a href="#reg/4-returns" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Returns</span></h2><ul><li><code class="inline">ok</code> - Registration successful</li><li><code class="inline">{error, term()}</code> - Registration failed</li></ul><h2 id="reg/4-examples" class="section-heading"><a href="#reg/4-examples" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Examples</span></h2><pre><code class="makeup erlang" translate="no"><span class="c1">%% Register a function for the &#39;before_save&#39; hook</span><span class="w">
+</span><span class="ss">ok</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">hooks</span><span class="p">:</span><span class="nf">reg</span><span class="p" data-group-id="8772612197-1">(</span><span class="ss">before_save</span><span class="p">,</span><span class="w"> </span><span class="ss">validator</span><span class="p">,</span><span class="w"> </span><span class="ss">check_data</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p" data-group-id="8772612197-1">)</span><span class="p">.</span></code></pre><h2 id="reg/4-since" class="section-heading"><a href="#reg/4-since" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Since</span></h2><p>1.0.0</p>
+  </section>
+</section>
+<section class="detail" id="reg/5">
+
+  <div class="detail-header">
+    <a href="#reg/5" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">reg(HookName, Module, Fun, Arity, Priority)</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L180" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> reg(HookName :: <a href="#t:hookname/0">hookname</a>(),
+          Module :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(),
+          Fun :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(),
+          Arity :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:non_neg_integer/0">non_neg_integer</a>(),
+          Priority :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:integer/0">integer</a>()) ->
+             ok | {error, <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:term/0">term</a>()}.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="run/2">
+
+  <div class="detail-header">
+    <a href="#run/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">run(HookName, Args)</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L233" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> run(HookName :: <a href="#t:hookname/0">hookname</a>(), Args :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:list/0">list</a>()) -> ok.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="run_fold/3">
+
+  <div class="detail-header">
+    <a href="#run_fold/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">run_fold(HookName, Args, Acc)</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L260" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> run_fold(HookName :: <a href="#t:hookname/0">hookname</a>(), Args :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:list/0">list</a>(), Acc :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:any/0">any</a>()) -> Acc2 :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:any/0">any</a>().</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="start_link/0">
+
+  <div class="detail-header">
+    <a href="#start_link/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">start_link()</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L339" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+
+  </section>
+</section>
+<section class="detail" id="terminate/3">
+
+  <div class="detail-header">
+    <a href="#terminate/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">terminate(Reason, StateName, State)</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L467" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+
+  </section>
+</section>
+<section class="detail" id="unreg/3">
+
+  <div class="detail-header">
+    <a href="#unreg/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">unreg(Module, Function, Arity)</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L185" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> unreg(Module :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(), Function :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(), Arity :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:non_neg_integer/0">non_neg_integer</a>()) -> ok.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="unreg/4">
+
+  <div class="detail-header">
+    <a href="#unreg/4" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">unreg(HookName, Module, Fun, Arity)</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L191" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> unreg(HookName :: <a href="#t:hookname/0">hookname</a>(), Module :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(), Fun :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(), Arity :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:non_neg_integer/0">non_neg_integer</a>()) -> ok.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="unreg/5">
+
+  <div class="detail-header">
+    <a href="#unreg/5" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">unreg(HookName, Module, Fun, Arity, Priority)</h1>
+
+
+        <a href="https://github.com/benoitc/hooks/blob/v3.0.0/src/hooks.erl#L198" class="icon-action" rel="help" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">-spec</span> unreg(HookName :: <a href="#t:hookname/0">hookname</a>(),
+            Module :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(),
+            Fun :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:atom/0">atom</a>(),
+            Arity :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:non_neg_integer/0">non_neg_integer</a>(),
+            Priority :: <a href="https://www.erlang.org/doc/apps/erts/erlang.html#t:integer/0">integer</a>()) ->
+               ok.</pre>
+
+      </div>
+
+
+  </section>
+</section>
+
+    </div>
+  </section>
+
+    <footer class="footer">
+      <p>
+
+          <span class="line">
+            <a href="https://hex.pm/packages/hooks/3.0.0" class="footer-hex-package">Hex Package</a>
+
+            <a href="https://preview.hex.pm/preview/hooks/3.0.0">Hex Preview</a>
+
+          </span>
+
+        <span class="line">
+          <button class="a-main footer-button display-quick-switch" title="Search HexDocs packages">
+            Search HexDocs
+          </button>
+
+            <a href="hooks.epub" title="ePub version">
+              Download ePub version
+            </a>
+
+        </span>
+      </p>
+
+      <p class="built-using">
+        Built using
+        <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener" translate="no">ExDoc</a> (v0.38.2) for the
+
+          <a href="https://erlang.org" title="Erlang" target="_blank" translate="no">Erlang programming language</a>
+
+      </p>
+
+    </footer>
+  </div>
+</main>
+</div>
+
+  </body>
+</html>

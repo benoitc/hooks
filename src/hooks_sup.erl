@@ -4,7 +4,7 @@
 %%
 %% hooks: generic Erlang hooks application
 %%
-%% Copyright (c) 2015-2017 Benoit Chesneau <benoitc@benoitcnetwork.eu>
+%% Copyright (c) 2015-2025 Benoît Chesneau
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -25,11 +25,6 @@
 %% THE SOFTWARE.
 %% -------------------------------------------------------------------
 
-%%%-------------------------------------------------------------------
-%% @doc hooks top level supervisor.
-%% @end
-%%%-------------------------------------------------------------------
-
 -module('hooks_sup').
 
 -behaviour(supervisor).
@@ -39,6 +34,9 @@
 
 %% Supervisor callbacks
 -export([init/1]).
+
+
+-include("hooks.hrl").
 
 -define(SERVER, ?MODULE).
 
@@ -53,9 +51,21 @@ start_link() -> supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 %%====================================================================
 
 init([]) ->
+    %% init table
+    _ = init_tabs(),
+
 	Hooks = {hooks,
 					 {hooks, start_link, []},
 					 permanent, 5000, worker,
 					 [hooks]},
 	
 	{ok, { {one_for_all, 0, 1}, [Hooks]} }.
+
+init_tabs() ->
+  ets:new(?TAB, [ordered_set, public, named_table,
+        {read_concurrency, true},
+        {write_concurrency, true}]).
+
+
+
+

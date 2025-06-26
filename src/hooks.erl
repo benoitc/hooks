@@ -4,7 +4,7 @@
 %%
 %% hooks: generic Erlang hooks application
 %%
-%% Copyright (c) 2015-2017 Benoit Chesneau <benoitc@benoitcnetwork.eu>
+%% Copyright (c) 2015-2025 Benoît Chesneau
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,76 @@
 %% -------------------------------------------------------------------
 
 -module('hooks').
--behaviour(gen_server).
+-moduledoc """
+Generic hooks system for Erlang applications.
+
+## Overview
+
+The `hooks` module provides a flexible and efficient hooks system that allows you to create
+extension points in your application. Hooks enable you to register multiple functions that
+will be called at specific points in your code, similar to events or callbacks but with
+more flexibility.
+
+## Features
+
+- Priority-based execution order
+- Multiple execution strategies (run, fold, all, all_till_ok, only)
+- Plugin system with automatic hook registration
+- Efficient storage using persistent_term
+- Support for deferred initialization
+
+## Examples
+
+### Basic Hook Registration
+
+    %% Register a hook function
+    ok = hooks:reg(on_user_login, my_module, log_login, 2, 10).
+    
+    %% Run the hook
+    ok = hooks:run(on_user_login, [UserId, Timestamp]).
+    
+    %% Unregister the hook
+    ok = hooks:unreg(on_user_login, my_module, log_login, 2).
+
+### Using Plugins
+
+    %% Enable a plugin that registers its own hooks
+    ok = hooks:enable_plugin(my_plugin).
+    
+    %% Disable the plugin and unregister its hooks
+    ok = hooks:disable_plugin(my_plugin).
+
+### Different Execution Strategies
+
+    %% Run all hooks until one returns 'stop'
+    ok = hooks:run(before_save, [Data]).
+    
+    %% Fold over hooks with an accumulator
+    Result = hooks:run_fold(transform_data, [Input], InitialAcc).
+    
+    %% Get all results from all hooks
+    Results = hooks:all(validate_data, [Data]).
+    
+    %% Run until one returns ok or {ok, Value}
+    case hooks:all_till_ok(authenticate, [User, Pass]) of
+        ok -> authenticated;
+        {ok, UserInfo} -> {authenticated, UserInfo};
+        {error, Reasons} -> {failed, Reasons}
+    end.
+
+## Configuration
+
+The hooks application supports the following configuration options:
+
+- `{wait_for_proc, atom()}` - Wait for a registered process before becoming ready
+
+## Since
+
+1.0.0
+""".
+-behaviour(gen_statem).
+-author("Benoît Chesneau").
+-since("1.0.0").
 
 
 %% API to register hooks manually
@@ -51,20 +120,15 @@
 
 -export([start_link/0]).
 
--export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
+-export([init/1, callback_mode/0, handle_event/4, terminate/3, code_change/4]).
+%% State callbacks
+-export([not_ready/3, ready/3]).
 
--include_lib("syntax_tools/include/merl.hrl").
-
--define(TAB, ?MODULE).
-
--record(state, {ready=true,
-  on_init,
-  on_build}).
-
+-include("hooks.hrl").
 
 -define(find_hook(Name),
-  case catch hooks_mod:Name() of
-    {'EXIT', _} -> no_hook;
+  case persistent_term:get({hooks, Name}, no_hook) of
+    no_hook -> no_hook;
     Res -> Res
   end).
 
@@ -80,7 +144,30 @@
 reg(Module, Fun, Arity) ->
   reg(Fun, Module, Fun, Arity, 0).
 
-%% @doc register `Module:Fun/Arity' for the hook HookName
+-doc """
+Register a function for a specific hook name.
+
+## Parameters
+
+  * `HookName` - The hook identifier
+  * `Module` - The module containing the hook function
+  * `Fun` - The function name
+  * `Arity` - The function arity
+
+## Returns
+
+  * `ok` - Registration successful
+  * `{error, term()}` - Registration failed
+
+## Examples
+
+    %% Register a function for the 'before_save' hook
+    ok = hooks:reg(before_save, validator, check_data, 1).
+
+## Since
+
+1.0.0
+""".
 -spec reg(HookName::hookname(), Module::atom(), Fun::atom(), Arity::non_neg_integer()) -> ok | {error, term()}.
 reg(HookName, Module, Fun, Arity) ->
   reg(HookName, Module, Fun, Arity, 0).
@@ -91,7 +178,7 @@ reg(HookName, Module, Fun, Arity) ->
 -spec reg(HookName::hookname(), Module::atom(), Fun::atom(),
   Arity::non_neg_integer(), Priority::integer()) -> ok | {error, term()}.
 reg(HookName, Module, Fun, Arity, Priority) ->
-  gen_server:call(?MODULE, {reg, HookName, {Priority, {Module, Fun, Arity}}}).
+  gen_statem:call(?MODULE, {reg, HookName, {Priority, {Module, Fun, Arity}}}).
 
 %% @doc unregister `Module:Fun/Arity', the function name is the hook
 -spec unreg(Module::atom(), Function::atom(), Arity::non_neg_integer()) -> ok.
@@ -109,17 +196,17 @@ unreg(HookName, Module, Fun, Arity) ->
 -spec unreg(HookName::hookname(), Module::atom(), Fun::atom(),
   Arity::non_neg_integer(), Priority::integer()) -> ok.
 unreg(HookName, Module, Fun, Arity, Priority) ->
-  gen_server:call(?MODULE, {unreg, HookName, {Priority, {Module, Fun, Arity}}}).
+  gen_statem:call(?MODULE, {unreg, HookName, {Priority, {Module, Fun, Arity}}}).
 
 %% @doc register multiple hooks
 -spec mreg(Hooks::hooks()) -> ok | {error, term()}.
 mreg(Hooks) ->
-  gen_server:call(?MODULE, {mreg, Hooks}).
+  gen_statem:call(?MODULE, {mreg, Hooks}).
 
 %% @doc disable multiple hooks
 -spec munreg(Hooks::hooks()) -> ok.
 munreg(Hooks) ->
-  gen_server:call(?MODULE, {munreg, Hooks}).
+  gen_statem:call(?MODULE, {munreg, Hooks}).
 
 %% @doc enable a plugin
 %% This function will start an application if not started and register hooks
@@ -133,12 +220,12 @@ enable_plugin(Application) ->
 -spec enable_plugin(Application::atom(), Paths::[string()]) -> ok | {error, term()}.
 enable_plugin(Application, Paths)
   when is_atom(Application), is_list(Paths) ->
-  gen_server:call(?MODULE, {enable_plugin, Application, Paths}).
+  gen_statem:call(?MODULE, {enable_plugin, Application, Paths}).
 
 %% @doc disable a plugin
 -spec disable_plugin(Application::atom()) -> ok.
 disable_plugin(Application) ->
-  gen_server:call(?MODULE, {disable_plugin, Application}).
+  gen_statem:call(?MODULE, {disable_plugin, Application}).
 
 %% @doc run all hooks registered for the HookName.
 %% Execution can be interrupted if an hook return the atom `stop'.
@@ -250,114 +337,155 @@ find(HookName) ->
 
 %% @hidden
 start_link() ->
-  _ = init_tabs(),
-  gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+  gen_statem:start_link({local, ?MODULE}, ?MODULE, [], []).
 
-
-init_tabs() ->
-  case ets:info(?TAB, name) of
-    undefined ->
-      ets:new(?TAB, [ordered_set, public, named_table,
-        {read_concurrency, true},
-        {write_concurrency, true}]);
-    _ ->
-      true
-  end.
+%% @hidden
+callback_mode() ->
+  state_functions.
 
 %% @hidden
 init([]) ->
-  Ready = case application:get_env(hooks, wait_for_proc) of
-            {ok, Proc} when is_atom(Proc) ->
-              spawn_waiter(self(), Proc),
-              false;
-            _ ->
-              true
-          end,
-
-  %% build empty list of hooks
+  %% build empty list of hooks for safety
   build_hooks([]),
+  
+  case application:get_env(hooks, wait_for_proc) of
+    {ok, Proc} when is_atom(Proc) ->
+      spawn_waiter(self(), Proc),
+      {ok, not_ready, []};
+    _ ->
+      %% Send ready message to trigger initialization after init completes
+      self() ! ready,
+      {ok, ready, []}
+  end.
 
-  self() ! init_internal_hooks,
+%% State: not_ready
+not_ready({call, From}, Request, _State) ->
+  %% Immediately respond 'ok' to the caller
+  gen_statem:reply(From, ok),
+  %% Postpone the actual work
+  {keep_state_and_data, [{next_event, internal, {deferred_call, Request}}]};
 
-  {ok, #state{ready=Ready}}.
+not_ready(internal, {deferred_call, _Request}, _State) ->
+  %% Postpone deferred calls until ready
+  {keep_state_and_data, [postpone]};
 
-%% @hidden
-handle_call({reg, HookName, {Priority, MFA}}, _From, State) ->
+not_ready(info, ready, _Data) ->
+  %% Transition to ready state and initialize
+  do_init_hooks(),
+  %% gen_statem will automatically deliver postponed events
+  {next_state, ready, []}.
+
+%% State: ready
+ready({call, From}, {reg, HookName, {Priority, MFA}}, _State) ->
   case do_reg(HookName, {Priority, MFA}) of
     ok ->
-      maybe_build_hooks(State),
-      {reply, ok, State};
+      {keep_state_and_data, [{reply, From, ok}]};
     Error ->
-      {reply, Error, State}
+      {keep_state_and_data, [{reply, From, Error}]}
   end;
 
-handle_call({unreg, HookName, {Priority, MFA}}, _From, State) ->
+ready({call, From}, {unreg, HookName, {Priority, MFA}}, _State) ->
   do_unreg(HookName, {Priority, MFA}),
-  maybe_build_hooks(State),
-  {reply, ok, State};
+  {keep_state_and_data, [{reply, From, ok}]};
 
-handle_call({mreg, Hooks}, _From, State) ->
+ready({call, From}, {mreg, Hooks}, _State) ->
   case do_mreg(Hooks) of
     ok ->
-      maybe_build_hooks(State),
-      {reply, ok, State};
+      {keep_state_and_data, [{reply, From, ok}]};
     Error ->
-      {reply, Error, State}
+      {keep_state_and_data, [{reply, From, Error}]}
   end;
 
-handle_call({munreg, Hooks}, _From, State) ->
+ready({call, From}, {munreg, Hooks}, _State) ->
   do_munreg(Hooks),
-  maybe_build_hooks(State),
-  {reply, ok, State};
+  {keep_state_and_data, [{reply, From, ok}]};
 
-handle_call({enable_plugin, Application, Paths}, _From, State) ->
+ready({call, From}, {enable_plugin, Application, Paths}, _State) ->
   case do_enable_plugin(Application, Paths) of
     ok ->
-      maybe_build_hooks(State),
-      {reply, ok, State};
+      {keep_state_and_data, [{reply, From, ok}]};
     Error ->
-      {reply, Error, State}
+      {keep_state_and_data, [{reply, From, Error}]}
   end;
-handle_call({disable_plugin, Application}, _From, State) ->
+ready({call, From}, {disable_plugin, Application}, _State) ->
   do_disable_plugin(Application),
-  maybe_build_hooks(State),
-  {reply, ok, State};
+  {keep_state_and_data, [{reply, From, ok}]};
 
-handle_call(_Msg, _From, State) ->
-  {reply, badarg, State}.
+ready({call, From}, _Msg, _State) ->
+  {keep_state_and_data, [{reply, From, badarg}]};
+
+ready(info, ready, _State) ->
+  %% Initialize hooks when ready message is received
+  do_init_hooks(),
+  keep_state_and_data;
+
+ready(info, _Info, _State) ->
+  keep_state_and_data;
+
+ready(internal, {deferred_call, {reg, HookName, {Priority, MFA}}}, _State) ->
+  %% Process deferred registration
+  _ = do_reg(HookName, {Priority, MFA}),
+  keep_state_and_data;
+
+ready(internal, {deferred_call, {unreg, HookName, {Priority, MFA}}}, _State) ->
+  %% Process deferred unregistration
+  do_unreg(HookName, {Priority, MFA}),
+  keep_state_and_data;
+
+ready(internal, {deferred_call, {mreg, Hooks}}, _State) ->
+  %% Process deferred multi-registration
+  _ = do_mreg(Hooks),
+  keep_state_and_data;
+
+ready(internal, {deferred_call, {munreg, Hooks}}, _State) ->
+  %% Process deferred multi-unregistration
+  do_munreg(Hooks),
+  keep_state_and_data;
+
+ready(internal, {deferred_call, {enable_plugin, Application, Paths}}, _State) ->
+  %% Process deferred plugin enable
+  do_enable_plugin(Application, Paths),
+  keep_state_and_data;
+
+ready(internal, {deferred_call, {disable_plugin, Application}}, _State) ->
+  %% Process deferred plugin disable
+  do_disable_plugin(Application),
+  keep_state_and_data.
 
 %% @hidden
-handle_cast(_Msg, State) ->
-  {noreply, State}.
+handle_event(EventType, EventContent, State, _Data) ->
+  %% Log unhandled events for debugging
+  error_logger:warning_msg("Unhandled event ~p in state ~p: ~p~n", 
+                          [EventType, State, EventContent]),
+  keep_state_and_data.
 
 %% @hidden
-handle_info(ready, State) ->
-  build_hooks(),
-  {noreply, State#state{ready=true}};
-
-handle_info(init_internal_hooks, State) ->
-  ok = do_enable_plugin(hooks, []),
-  %% we always add internal plugins
-  build_hooks(),
-  %% run init hooks
-  hooks:run(init_hooks, []),
-  {noreply, State};
-
-handle_info(_Info, State) ->
-  {noreply, State}.
+code_change(_OldVsn, StateName, State, _Extra) ->
+  {ok, StateName, State}.
 
 %% @hidden
-code_change(_OldVsn, State, _Extra) ->
-  {ok, State}.
-
-%% @hidden
-terminate(_Reason, _Srv) ->
-  _ = code:delete(hooks_mod),
+terminate(_Reason, _StateName, _State) ->
+  %% Clean up all persistent_term entries for hooks
+  lists:foreach(fun(Key) ->
+    case Key of
+      {hooks, _} -> persistent_term:erase(Key);
+      _ -> ok
+    end
+  end, persistent_term:get()),
   ok.
 
 
 %%% private functions
 %%%
+
+do_init_hooks() ->
+  %% Enable internal hooks plugin
+  ok = do_enable_plugin(hooks, []),
+  %% Build all hooks from ETS into persistent_term
+  build_hooks(),
+  %% Run initialization hooks
+  hooks:run(init_hooks, []).
+
 spawn_waiter(Server, Proc) ->
   spawn_link(fun() -> wait_proc_loop(Server, Proc) end).
 
@@ -411,10 +539,21 @@ do_unreg(HookName, Hook) ->
 update_hooks(HookName, HookFuns) ->
   case ets:lookup(?TAB, {h, HookName}) of
     [] ->
-      true = ets:insert(?TAB, {{h, HookName}, HookFuns});
+      true = ets:insert(?TAB, {{h, HookName}, HookFuns}),
+      %% Update persistent_term for new hook
+      Sorted = lists:keysort(1, HookFuns),
+      MFs = [{M, F} || {_P, {M, F, _A}} <- Sorted],
+      persistent_term:put({hooks, HookName}, MFs);
     [{_, Funs}] ->
-      Funs2 = lists:keysort(1, Funs ++ HookFuns),
-      true = ets:insert(?TAB, {{h, HookName}, Funs2})
+      %% Merge hooks, avoiding duplicates
+      AllFuns = Funs ++ HookFuns,
+      %% Remove duplicates while preserving order
+      Funs2 = lists:usort(AllFuns),
+      true = ets:insert(?TAB, {{h, HookName}, Funs2}),
+      %% Update persistent_term with merged hooks
+      Sorted = lists:keysort(1, Funs2),
+      MFs = [{M, F} || {_P, {M, F, _A}} <- Sorted],
+      persistent_term:put({hooks, HookName}, MFs)
   end.
 
 remove_hooks(HookName, HookFuns) ->
@@ -425,9 +564,15 @@ remove_hooks(HookName, HookFuns) ->
       Funs2 = Funs -- HookFuns,
       case Funs2 of
         [] ->
-          ets:delete(?TAB, {h, HookName});
+          ets:delete(?TAB, {h, HookName}),
+          %% Also remove from persistent_term when no hooks left
+          persistent_term:erase({hooks, HookName});
         _ ->
-          ets:insert(?TAB, {{h, HookName}, Funs2})
+          ets:insert(?TAB, {{h, HookName}, Funs2}),
+          %% Update persistent_term with new hook list
+          Sorted = lists:keysort(1, Funs2),
+          MFs = [{M, F} || {_P, {M, F, _A}} <- Sorted],
+          persistent_term:put({hooks, HookName}, MFs)
       end
   end.
 
@@ -448,14 +593,19 @@ do_enable_plugin(Application, Paths) ->
   end.
 
 do_disable_plugin(Application) ->
-  case lists:keyfind(Application, 1, application:loaded_applications()) of
-    true ->
-      Exports = Application:module_info(exports),
-      case lists:member({stop, 0}, Exports) of
-        true -> Application:stop();
-        false -> application:stop(Application)
-      end;
-    _ -> ok
+  %% Don't try to stop the hooks application itself
+  case Application of
+    hooks -> ok;
+    _ ->
+      case lists:keyfind(Application, 1, application:loaded_applications()) of
+        {Application, _, _} ->
+          Exports = Application:module_info(exports),
+          case lists:member({stop, 0}, Exports) of
+            true -> Application:stop();
+            false -> application:stop(Application)
+          end;
+        false -> ok
+      end
   end,
 
   case ets:lookup(?TAB, {p, Application}) of
@@ -520,31 +670,29 @@ check_mfa({Mod, Fun, Arity}) ->
     false -> {error, hooks_not_exported}
   end.
 
-maybe_build_hooks(#state{ready=false}) -> ok;
-maybe_build_hooks(#state{ready=true}) -> build_hooks().
 
 build_hooks() ->
   Hooks = ets:select(?TAB, [{{{h,'$1'},'$2'},[],[{{'$1','$2'}}]}]),
   build_hooks(Hooks).
 
 build_hooks(Hooks) ->
-  %% build hooks function 'hook() -> [{M, F} |..].'
-  {Exports, HookFuns} = lists:foldl(
-    fun({Name, FunsByPriority}, {ExportsAcc, FunsAcc}) ->
-      Funs = [{M, F} || {_P, {M, F, _A}} <- FunsByPriority],
-      HookFun =  erl_syntax:function(merl:term(Name), [?Q("() -> _@Funs@")]),
-      {[atom_to_list(Name) | ExportsAcc], [HookFun | FunsAcc]}
-    end,
-    {[], []}, Hooks),
-
-  %% build module
-  Module = ?Q("-module('hooks_mod')."),
-  ExportedStr = string:join(["'" ++ E ++ "'/0" || E <- Exports], ","),
-  Exported = ?Q("-export([" ++ ExportedStr ++ "])."),
-  Functions = [ ?Q("'@_F'() -> [].") || F <- [HookFuns]],
-  Forms = lists:flatten([Module, Exported, Functions]),
-  merl:compile_and_load(Forms, [verbose]),
-  _ = code:purge(hooks_mod),
+  %% Clean up all existing hook entries in persistent_term first
+  lists:foreach(fun(Key) ->
+    case Key of
+      {hooks, _} -> persistent_term:erase(Key);
+      _ -> ok
+    end
+  end, persistent_term:get()),
+  
+  %% Bulk update persistent_term for all hooks (used during initialization)
+  lists:foreach(
+    fun({Name, FunsByPriority}) ->
+      %% Sort by priority and extract {M, F} tuples
+      Sorted = lists:keysort(1, FunsByPriority),
+      Funs = [{M, F} || {_P, {M, F, _A}} <- Sorted],
+      persistent_term:put({hooks, Name}, Funs)
+    end, Hooks),
+  
   %% run build hooks
   hooks:run(build_hooks, [Hooks]),
   ok.
@@ -561,7 +709,9 @@ unregister_plugin_hooks({Hooks, _Path}, Application) ->
           NewSpecs /= [] ->
             ets:insert(?TAB, {{h, HookName}, NewSpecs});
           true ->
-            ets:delete(?TAB, {h, HookName})
+            ets:delete(?TAB, {h, HookName}),
+            %% Clean up persistent_term when hook is completely removed
+            persistent_term:erase({hooks, HookName})
         end
     end
                 end, Hooks),
@@ -580,11 +730,19 @@ load_plugin(Application, Paths) ->
           {ok, Specs2} ->
             case ets:lookup(?TAB, {h, HookName})  of
               [] ->
-                ets:insert(?TAB, {{h, HookName}, Specs2});
+                ets:insert(?TAB, {{h, HookName}, Specs2}),
+                %% Update persistent_term for new hook
+                Sorted = lists:keysort(1, Specs2),
+                MFs = [{M, F} || {_P, {M, F, _A}} <- Sorted],
+                persistent_term:put({hooks, HookName}, MFs);
               [{_, OldSpecs}] ->
                 ToRem = OldSpecs -- Specs2,
                 NewSpecs = lists:merge(OldSpecs -- ToRem, Specs2),
-                ets:insert(?TAB, {{h, HookName}, NewSpecs})
+                ets:insert(?TAB, {{h, HookName}, NewSpecs}),
+                %% Update persistent_term with merged hooks
+                Sorted = lists:keysort(1, NewSpecs),
+                MFs = [{M, F} || {_P, {M, F, _A}} <- Sorted],
+                persistent_term:put({hooks, HookName}, MFs)
             end;
           Error ->
             error_logger:error_msg("~p~n error registering: ~p~n", [HookName, Error]),
