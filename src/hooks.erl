@@ -4,7 +4,7 @@
 %%
 %% hooks: generic Erlang hooks application
 %%
-%% Copyright (c) 2015-2017 Benoit Chesneau <benoitc@benoitcnetwork.eu>
+%% Copyright (c) 2015-2025 Benoît Chesneau
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,76 @@
 %% -------------------------------------------------------------------
 
 -module('hooks').
+-moduledoc """
+Generic hooks system for Erlang applications.
+
+## Overview
+
+The `hooks` module provides a flexible and efficient hooks system that allows you to create
+extension points in your application. Hooks enable you to register multiple functions that
+will be called at specific points in your code, similar to events or callbacks but with
+more flexibility.
+
+## Features
+
+- Priority-based execution order
+- Multiple execution strategies (run, fold, all, all_till_ok, only)
+- Plugin system with automatic hook registration
+- Efficient storage using persistent_term
+- Support for deferred initialization
+
+## Examples
+
+### Basic Hook Registration
+
+    %% Register a hook function
+    ok = hooks:reg(on_user_login, my_module, log_login, 2, 10).
+    
+    %% Run the hook
+    ok = hooks:run(on_user_login, [UserId, Timestamp]).
+    
+    %% Unregister the hook
+    ok = hooks:unreg(on_user_login, my_module, log_login, 2).
+
+### Using Plugins
+
+    %% Enable a plugin that registers its own hooks
+    ok = hooks:enable_plugin(my_plugin).
+    
+    %% Disable the plugin and unregister its hooks
+    ok = hooks:disable_plugin(my_plugin).
+
+### Different Execution Strategies
+
+    %% Run all hooks until one returns 'stop'
+    ok = hooks:run(before_save, [Data]).
+    
+    %% Fold over hooks with an accumulator
+    Result = hooks:run_fold(transform_data, [Input], InitialAcc).
+    
+    %% Get all results from all hooks
+    Results = hooks:all(validate_data, [Data]).
+    
+    %% Run until one returns ok or {ok, Value}
+    case hooks:all_till_ok(authenticate, [User, Pass]) of
+        ok -> authenticated;
+        {ok, UserInfo} -> {authenticated, UserInfo};
+        {error, Reasons} -> {failed, Reasons}
+    end.
+
+## Configuration
+
+The hooks application supports the following configuration options:
+
+- `{wait_for_proc, atom()}` - Wait for a registered process before becoming ready
+
+## Since
+
+1.0.0
+""".
 -behaviour(gen_statem).
+-author("Benoît Chesneau").
+-since("1.0.0").
 
 
 %% API to register hooks manually
@@ -75,7 +144,30 @@
 reg(Module, Fun, Arity) ->
   reg(Fun, Module, Fun, Arity, 0).
 
-%% @doc register `Module:Fun/Arity' for the hook HookName
+-doc """
+Register a function for a specific hook name.
+
+## Parameters
+
+  * `HookName` - The hook identifier
+  * `Module` - The module containing the hook function
+  * `Fun` - The function name
+  * `Arity` - The function arity
+
+## Returns
+
+  * `ok` - Registration successful
+  * `{error, term()}` - Registration failed
+
+## Examples
+
+    %% Register a function for the 'before_save' hook
+    ok = hooks:reg(before_save, validator, check_data, 1).
+
+## Since
+
+1.0.0
+""".
 -spec reg(HookName::hookname(), Module::atom(), Fun::atom(), Arity::non_neg_integer()) -> ok | {error, term()}.
 reg(HookName, Module, Fun, Arity) ->
   reg(HookName, Module, Fun, Arity, 0).

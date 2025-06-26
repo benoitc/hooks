@@ -4,7 +4,7 @@
 %%
 %% hooks: generic Erlang hooks application
 %%
-%% Copyright (c) 2015-2017 Benoi Chesneau <benoitc@benoitcnetwork.eu>
+%% Copyright (c) 2015-2025 Benoît Chesneau
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy
 %% of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,20 @@
 %% -------------------------------------------------------------------
 
 
-%%%-------------------------------------------------------------------
-%% @doc hooks public API
-%% @end
-%%%-------------------------------------------------------------------
-
 -module('hooks_app').
+-moduledoc """
+Application callback module for the hooks application.
+
+## Overview
+
+This module implements the application behavior for the hooks system.
+It manages the lifecycle of the hooks application, starting the
+supervisor tree when the application starts.
+
+## Since
+
+1.0.0
+""".
 
 -behaviour(application).
 
@@ -42,6 +50,38 @@
 %% API
 %%====================================================================
 
+-doc """
+Starts the hooks application.
+
+## Parameters
+
+  * `StartType` - The type of start (normal, takeover, or failover)
+  * `StartArgs` - Arguments passed to the application
+
+## Returns
+
+  * `{ok, Pid}` - On successful start, where Pid is the supervisor's PID
+  * `{error, Reason}` - If the application fails to start
+
+## Since
+
+1.0.0
+""".
 start(_StartType, _StartArgs) -> 'hooks_sup':start_link().
 
+-doc """
+Stops the hooks application.
+
+## Parameters
+
+  * `State` - The application state (ignored)
+
+## Returns
+
+Always returns `ok`.
+
+## Since
+
+1.0.0
+""".
 stop(_State) -> ok.

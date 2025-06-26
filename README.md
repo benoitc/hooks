@@ -1,163 +1,371 @@
-
-
-# hooks - Generic Hooks system for Erlang and Elixir pplications #
-
-Copyright (c) 2015-2017 Benoit Chesneau.
-
-__Version:__ 2.1.0
-
 # hooks
 
-`hooks` is a generic Hooks system for **Erlang** applications. It allows you to
-augment your application by adding hooks to your application aka
-[Hooking](https://en.wikipedia.org/wiki/Hooking). Hooks can also be [used easily
-with Elixir applications](#usage-in-elixir-applications).
+[![Build Status](https://github.com/benoitc/hooks/workflows/CI/badge.svg)](https://github.com/benoitc/hooks/actions)
+[![Hex.pm](https://img.shields.io/hexpm/v/hooks.svg)](https://hex.pm/packages/hooks)
+[![Documentation](https://img.shields.io/badge/docs-hexdocs-blue.svg)](https://hexdocs.pm/hooks/)
 
-[![Build Status](https://travis-ci.org/barrel-db/hooks.png?branch=master)](https://travis-ci.org/barrel-db/hooks)
-[![Hex pm](http://img.shields.io/hexpm/v/hooks.svg?style=flat)](https://hex.pm/packages/hooks)
+A generic and efficient Hooks system for Erlang and Elixir applications.
 
-Main Features are:
+## Overview
 
-- Handle module hooks
-- Basic plugin system
-- Registered hooks are exported as functions in a dynamically compiled erlang module . It allows us to share the list of registered hooks between every process of your application without message passing. It is also memory efficient and minimize locking.
+`hooks` is a generic hooks system that allows you to augment your application by adding hooks (also known as extension points or plugins). It's designed to be efficient and minimalistic while providing powerful plugin capabilities.
 
-## Usage in Erlang Applications
+### Main Features
 
-Full application API is available in [`hooks`](http://github.com/barrel-db/hooks/blob/master/doc/hooks.md) .
+- **Simple Hook Registration** - Register hooks with priority-based execution
+- **Plugin System** - Enable/disable plugins dynamically
+- **Efficient Storage** - Uses persistent_term for constant-time hook lookups
+- **Multiple Execution Modes** - Run all, run until ok, run fold, or run only the first hook
+- **Erlang & Elixir Support** - Native support for both languages
+- **No Dependencies** - Zero runtime dependencies
 
-### adding hooks manually
+## Installation
 
-Your application can add hooks using the following methods
+### Erlang (rebar3)
 
-- `hooks:reg/{3, 4, 5}` to register a hook from a module
-- `hook:unreg/{3, 5, 5}` to unregister a hook.
+Add `hooks` to your `rebar.config` dependencies:
 
-```
-ok = hooks:reg(a, ?MODULE, hook_add, 1, 10),
-ok = hooks:reg(a, ?MODULE, hook_add2, 1, 0),
-```
-
-### add multiple hooks
-
-- `hook:mreg/1`: to register multiple hooks
-- `hooks:munreg/1`: to register multiple hooks
-
-Ex:
-
-```
-Hooks = [{a, [{?MODULE, hook1, 0},
-              {?MODULE, hook2, 0}]},
-         {b, [{?MODULE, hook1, 2},
-              {?MODULE, hook2, 2}]},
-         {c, [{?MODULE, hook_add, 1},
-              {?MODULE, hook_add1, 1}]}],
-%% register multiple hooks
-ok = hooks:mreg(Hooks),
-%% unregister multiple hooks
-ok = hooks:munreg(Hooks)
+```erlang
+{deps, [
+    {hooks, "3.0.0"}
+]}.
 ```
 
-### Enable/Disable Plugins
+### Elixir (mix)
 
-Plugins are simple Erlang applications that exposes hooks. A plugin can be enabled to your application using `hooks:enable_plugin/{1,2}` and disabled using `hooks:disable_plugin/1` . When enabled the application and its dependencies are started (if not already stared) and exposed hooks are registered.
+Add `hooks` to your `mix.exs` dependencies:
 
-To expose the hooks,  just add them to application environment settings. Example:
-
+```elixir
+def deps do
+  [
+    {:hooks, "~> 3.0.0"}
+  ]
+end
 ```
-{application, 'myapp',
- [{description, ""},
+
+## Quick Start
+
+### Erlang Example
+
+```erlang
+%% Start the hooks application
+application:ensure_all_started(hooks).
+
+%% Register a hook
+ok = hooks:reg(my_hook, my_module, my_function, 1, 0).
+
+%% Run the hook
+ok = hooks:run(my_hook, [arg1]).
+
+%% Unregister the hook
+ok = hooks:unreg(my_hook, my_module, my_function, 1).
+```
+
+### Elixir Example
+
+```elixir
+# Start the hooks application
+Application.ensure_all_started(:hooks)
+
+# Register a hook
+:ok = Hooks.reg(:my_hook, MyModule, :my_function, 1)
+
+# Run the hook
+:ok = Hooks.run(:my_hook, [:arg1])
+
+# Unregister the hook
+:ok = Hooks.unreg(:my_hook, MyModule, :my_function, 1)
+```
+
+## API Documentation
+
+### Hook Registration
+
+#### `reg/3`, `reg/4`, `reg/5`
+
+Register a hook function.
+
+```erlang
+%% Register using function name as hook name
+hooks:reg(Module, Function, Arity).
+
+%% Register with specific hook name
+hooks:reg(HookName, Module, Function, Arity).
+
+%% Register with priority (default is 0, higher priority executes first)
+hooks:reg(HookName, Module, Function, Arity, Priority).
+```
+
+#### `unreg/3`, `unreg/4`, `unreg/5`
+
+Unregister a hook function.
+
+```erlang
+hooks:unreg(Module, Function, Arity).
+hooks:unreg(HookName, Module, Function, Arity).
+hooks:unreg(HookName, Module, Function, Arity, Priority).
+```
+
+#### `mreg/1`, `munreg/1`
+
+Register or unregister multiple hooks at once.
+
+```erlang
+%% Register multiple hooks
+Hooks = [
+    {hook_name1, [{Module1, Function1, Arity1}, {Module2, Function2, Arity2}]},
+    {hook_name2, [{Module3, Function3, Arity3}]}
+],
+ok = hooks:mreg(Hooks).
+
+%% Unregister multiple hooks
+ok = hooks:munreg(Hooks).
+```
+
+### Hook Execution
+
+#### `run/2`
+
+Execute all hooks for a given hook name. Execution stops if a hook returns `stop`.
+
+```erlang
+ok = hooks:run(HookName, Args).
+```
+
+#### `run_fold/3`
+
+Fold over all hooks, passing an accumulator.
+
+```erlang
+Result = hooks:run_fold(HookName, Args, InitialAcc).
+```
+
+#### `all/2`
+
+Execute all hooks and return all results.
+
+```erlang
+Results = hooks:all(HookName, Args).
+```
+
+#### `all_till_ok/2`
+
+Execute hooks until one returns `ok` or `{ok, Value}`.
+
+```erlang
+Result = hooks:all_till_ok(HookName, Args).
+```
+
+#### `only/2`
+
+Execute only the highest priority hook.
+
+```erlang
+Result = hooks:only(HookName, Args).
+```
+
+### Plugin Management
+
+#### `enable_plugin/1`, `enable_plugin/2`
+
+Enable a plugin (Erlang application) and register its hooks.
+
+```erlang
+%% Enable plugin
+ok = hooks:enable_plugin(my_plugin).
+
+%% Enable plugin with custom code paths
+ok = hooks:enable_plugin(my_plugin, ["path/to/plugin"]).
+```
+
+Plugins expose hooks through their application environment:
+
+```erlang
+%% In plugin's .app.src file
+{env, [
+    {hooks, [
+        {on_connect, [{my_plugin, handle_connect, 2}]},
+        {on_disconnect, [{my_plugin, handle_disconnect, 1}]}
+    ]}
+]}
+```
+
+#### `disable_plugin/1`
+
+Disable a plugin and unregister its hooks.
+
+```erlang
+ok = hooks:disable_plugin(my_plugin).
+```
+
+### Utility Functions
+
+#### `find/1`
+
+Find all registered hooks for a hook name.
+
+```erlang
+{ok, [{Module, Function}, ...]} = hooks:find(HookName).
+error = hooks:find(NonExistentHook).
+```
+
+## Advanced Features
+
+### Internal Hooks
+
+Two internal hooks are available for the hooks application itself:
+
+- `init_hooks` - Called when hooks application starts (arity 0)
+- `build_hooks` - Called when the hook list changes (arity 1, receives hook list)
+
+### Wait for Process
+
+The `wait_for_proc` application environment setting allows hooks to wait for a specific registered process before becoming available:
+
+```erlang
+%% In your app.config or sys.config
+[
+    {hooks, [
+        {wait_for_proc, my_main_process}
+    ]}
+].
+```
+
+This ensures hooks aren't executed until your main application process is ready.
+
+## Examples
+
+### Authentication Hook System
+
+```erlang
+%% Define authentication modules
+-module(basic_auth).
+-export([authenticate/2]).
+
+authenticate(Username, Password) ->
+    %% Basic authentication logic
+    case check_credentials(Username, Password) of
+        true -> ok;
+        false -> {error, invalid_credentials}
+    end.
+
+-module(ldap_auth).
+-export([authenticate/2]).
+
+authenticate(Username, Password) ->
+    %% LDAP authentication logic
+    case ldap:check(Username, Password) of
+        {ok, _} -> ok;
+        _ -> {error, ldap_auth_failed}
+    end.
+
+%% Register authentication hooks
+hooks:reg(authenticate, basic_auth, authenticate, 2, 10).
+hooks:reg(authenticate, ldap_auth, authenticate, 2, 5).
+
+%% Use authentication
+case hooks:all_till_ok(authenticate, [Username, Password]) of
+    ok -> login_success();
+    {ok, UserData} -> login_success(UserData);
+    {error, Reasons} -> login_failed(Reasons)
+end.
+```
+
+### Event Processing Pipeline
+
+```erlang
+%% Define event processors
+-module(logger).
+-export([process_event/1]).
+
+process_event(Event) ->
+    error_logger:info_msg("Event: ~p~n", [Event]),
+    Event.
+
+-module(metrics).
+-export([process_event/1]).
+
+process_event(Event) ->
+    prometheus:increment(event_counter),
+    Event.
+
+-module(validator).
+-export([process_event/1]).
+
+process_event(Event) ->
+    case is_valid(Event) of
+        true -> Event;
+        false -> stop  %% Stop processing invalid events
+    end.
+
+%% Register event processors
+hooks:reg(on_event, validator, process_event, 1, 100).  %% Highest priority
+hooks:reg(on_event, logger, process_event, 1, 50).
+hooks:reg(on_event, metrics, process_event, 1, 10).
+
+%% Process an event
+hooks:run(on_event, [Event]).
+```
+
+### Plugin-based Extension System
+
+```erlang
+%% my_plugin.app.src
+{application, my_plugin,
+ [{description, "My plugin"},
   {vsn, "1.0.0"},
+  {modules, []},
+  {env, [
+    {hooks, [
+        {startup, [{my_plugin, on_startup, 0}]},
+        {shutdown, [{my_plugin, on_shutdown, 0}]},
+        {request, [{my_plugin, on_request, 2}]}
+    ]}
+  ]}
+]}.
 
-  ...
+%% Enable the plugin
+hooks:enable_plugin(my_plugin).
 
-  {env,[
-    {hooks, [{a, [{?MODULE, hook1, 0},
-                  {?MODULE, hook2, 0}]},
-             {b, [{?MODULE, hook1, 2},
-                  {?MODULE, hook2, 2}]}]},
-    ...
-  ]},
-
-  ...
-
- ]}.
+%% The hooks are now automatically registered and will be called
+hooks:run(startup, []).
 ```
 
-> You can specify a patch where to load the application and its dependencies.
+## Performance Considerations
 
-### run hooks
+1. **Hook Storage**: Hooks are stored in ETS during registration and in persistent_term for execution, providing constant-time lookups.
 
-You can use the following command to execute hooks
+2. **Compilation**: No dynamic module compilation - all hooks are immediately available.
 
-- `hooks:run/2` :run all hooks registered for the HookName.
-- `hooks:run_fold/3`: fold over all hooks registered for HookName, and return Acc.
-- `hooks:all/2`: execute all hooks for this HookName and return all results
-- `hooks:all_till_ok/2`: execute all hooks for the HookName until one return ok or {ok, Val}.
-- `hooks:only/2`: call the top priority hook for the HookName and return the result.
+3. **Memory**: Very memory efficient as persistent_term is optimized for read-heavy workloads.
 
-### advanced features
+4. **Concurrency**: Multiple processes can execute hooks simultaneously without locks.
 
-#### Internal  hooks
+## Contributing
 
-2 internal hooks are exposed
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
-- `init_hooks`: the hook is executed when hooks is started, a function of arity 0 is expected.
-- `build_hooks`: the hooks is executed when the list of hooks has changed. A function of arity 1, receiving the list of hooks is expected.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-When added to the hooks application environnement, the hooks are immediately available and won't wait for any registered process.
+## License
 
-#### wait_for_proc application setting
+Copyright (c) 2015-2025 Benoît Chesneau.
 
-The `wait_for_proc` application environment settings in the `hooks` application allows you to wait for a specific registered process (example your main application process) to be started before making the hooks available. It means that until the process isn`t registered the beam containing the list of hooks won't be compiled with the list of added hooks.
+This project is licensed under the BSD License - see the [LICENSE](LICENSE) file for details.
 
-#### custom start/stop functions
+## Acknowledgments
 
-When enabling a plugin the application is generally started like any OTP application. In some cases however you may want to use your own start/stop functions.
+- Originally created for the [barrel-db](https://github.com/barrel-db) project
+- Inspired by various plugin systems in the Erlang ecosystem
+- Thanks to all contributors who have helped improve this library
 
-To do it create an `Application` module and add to it the functions `start/0` and `stop/0`. `Application:start/0` should return ok or an error if it can't be started.
+## Resources
 
-## Usage in Elixir applications
-
-Add hooks to your mix app by adding hooks to your list of dependencies,
-
-```
-[{:hooks, "~> 2.0.0"}]
-
-## [{:hooks, git: "https://github.com/barrel-db/hooks"}]
-```
-
-Sample code usage is as follows:
-
-```
-defmodule DemoMReg do
-    def run do
-        Application.ensure_all_started(:hooks)
-        hooks = [
-                    {:a, [{__MODULE__, :hook1, 1}, {__MODULE__, :hook1, 1}]},
-                    {:b, [{__MODULE__, :hook1, 1}, {__MODULE__, :hook1, 1}]}
-                ]
-
-        IO.inspect Hooks.mreg(hooks)
-        IO.inspect Hooks.find(:b)
-        IO.inspect Hooks.all(:b, [1])
-    end
-
-    def hook1(args) do
-        [ok: args]
-    end
-end
-
-defmodule DemoReg do
-    def run do
-        Application.ensure_all_started(:hooks)
-        IO.inspect Hooks.reg(:c, __MODULE__, :hook1, 1)
-        IO.inspect Hooks.find(:c)
-        IO.inspect Hooks.all(:c, [1])
-    end
-
-    def hook1(args) do
-        [ok: args]
-    end
-end
-```
+- [Hex Package](https://hex.pm/packages/hooks)
+- [Documentation](https://hexdocs.pm/hooks/)
+- [GitHub Repository](https://github.com/benoitc/hooks)
+- [Issue Tracker](https://github.com/benoitc/hooks/issues)
