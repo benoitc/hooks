@@ -40,6 +40,9 @@
 %% Supervisor callbacks
 -export([init/1]).
 
+
+-include("hooks.hrl").
+
 -define(SERVER, ?MODULE).
 
 %%====================================================================
@@ -53,9 +56,21 @@ start_link() -> supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 %%====================================================================
 
 init([]) ->
+    %% initi table
+    _ = init_tabs(),
+
 	Hooks = {hooks,
 					 {hooks, start_link, []},
 					 permanent, 5000, worker,
 					 [hooks]},
 	
 	{ok, { {one_for_all, 0, 1}, [Hooks]} }.
+
+init_tabs() ->
+  ets:new(?TAB, [ordered_set, public, named_table,
+        {read_concurrency, true},
+        {write_concurrency, true}]).
+
+
+
+
