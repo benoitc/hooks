@@ -23,7 +23,7 @@ jobs:
         
     - name: Install rebar3
       run: |
-        wget https://github.com/erlang/rebar3/releases/download/3.23.0/rebar3
+        wget https://github.com/erlang/rebar3/releases/download/3.25.0/rebar3
         chmod +x rebar3
         
     - name: Compile
